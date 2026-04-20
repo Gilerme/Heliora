@@ -54,7 +54,10 @@ export default function LoginScreen() {
             onChangeText={setSenha}
           />
 
-          <TouchableOpacity style={styles.botaoEsqueci}>
+          <TouchableOpacity
+            style={styles.botaoEsqueci}
+            onPress={() => router.push("/esqueci-senha")}
+          >
             <Text style={styles.textoEsqueci}>Esqueceu a senha?</Text>
           </TouchableOpacity>
 
