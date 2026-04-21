@@ -39,6 +39,10 @@ export default function RootLayout() {
           name="exames"
           options={{ presentation: "modal", headerShown: false }}
         />
+        <Stack.Screen
+          name="perfil"
+          options={{ presentation: "modal", headerShown: false }}
+        />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>

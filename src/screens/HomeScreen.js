@@ -25,7 +25,7 @@ export default function HomeScreen() {
 
           <TouchableOpacity
             style={styles.perfilBotao}
-            onPress={() => alert("Abrir perfil")}
+            onPress={() => router.push("/perfil")}
           >
             <FontAwesome name="user" size={24} color="#4A729A" />
           </TouchableOpacity>
