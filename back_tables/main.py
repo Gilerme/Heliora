@@ -2,8 +2,19 @@ from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
 from database import SessionLocal, engine, Base
 import tables
+from pydantic import BaseModel
 # cria tabelas automaticamente (se não existirem)
 Base.metadata.create_all(bind=engine)
+
+class PacienteCreate(BaseModel):
+    nome: str
+    email:str
+
+class RegisterRequest(BaseModel):
+    id_paciente: int
+    username: str
+    senha: str
+
 
 app = FastAPI()
 
@@ -20,16 +31,21 @@ def get_db():
 # CRIAR PACIENTE
 # =========================
 @app.post("/pacientes/")
-def criar_paciente(nome: str, email: str, senha: str, db: Session = Depends(get_db)):
-    paciente = tables.Paciente(nome=nome, email=email, )
-    senha_cad = tables.login(senha=senha)
+def criar_paciente(dados: PacienteCreate, db: Session = Depends(get_db)):
+    paciente = tables.Paciente(nome=dados.nome, email=dados.email)
     db.add(paciente)
-    db.add(senha_cad)
     db.commit()
     db.refresh(paciente)
-    db.refresh(senha_cad)
-    return paciente, senha_cad
+    return paciente
 
+@app.post("/register/")
+def register(data: RegisterRequest):
+    # Aqui você salva no banco
+    # (exemplo simples)
+
+    return {
+        "msg": "Conta criada com sucesso"
+    }
 
 # =========================
 # LISTAR PACIENTES
