@@ -1,7 +1,12 @@
 import { FontAwesome } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as DocumentPicker from "expo-document-picker";
+import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+  Alert,
+  Image,
   SafeAreaView,
   ScrollView,
   Text,
@@ -12,13 +17,62 @@ import {
 import { styles } from "../styles/NovoRegistroStyles";
 
 export default function NovoRegistroModal() {
-  const [temImagem, setTemImagem] = useState(false);
   const router = useRouter();
+
   const [tipoSelecionado, setTipoSelecionado] = useState("Consulta"); // Pode ser Consulta, Exame ou Vacina
   const [estaGravando, setEstaGravando] = useState(false);
   const [notas, setNotas] = useState("");
+  const [arquivoAnexo, setArquivoAnexo] = useState(null);
+  const [titulo, setTitulo] = useState("");
+  const [dataRegistro, setDataRegistro] = useState("");
+  const [local, setLocal] = useState("");
 
-  // Função para simular o Scribe da IA
+  const anexarArquivo = async () => {
+    try {
+      const resultado = await DocumentPicker.getDocumentAsync({
+        type: "application/pdf", // Filtra apenas para PDFs
+        copyToCacheDirectory: true,
+      });
+
+      if (!resultado.canceled) {
+        // O Expo Document Picker retorna os dados dentro de assets[0]
+        setArquivoAnexo({
+          uri: resultado.assets[0].uri,
+          nome: resultado.assets[0].name,
+          tipo: "pdf",
+        });
+      }
+    } catch (err) {
+      console.error("Erro ao anexar documento:", err);
+      Alert.alert("Erro", "Não foi possível selecionar o arquivo.");
+    }
+  };
+
+  const tirarFoto = async () => {
+    const permissao = await ImagePicker.requestCameraPermissionsAsync();
+    if (permissao.granted === false) {
+      Alert.alert("Permissão negada", "Precisamos de acesso à câmera.");
+      return;
+    }
+    const resultado = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      quality: 0.7,
+    });
+    if (!resultado.canceled) {
+      setArquivoAnexo({ uri: resultado.assets[0].uri, tipo: "imagem" });
+    }
+  };
+
+  const escolherDaGaleria = async () => {
+    const resultado = await ImagePicker.launchImageLibraryAsync({
+      quality: 0.7,
+    });
+    if (!resultado.canceled) {
+      setArquivoAnexo({ uri: resultado.assets[0].uri, tipo: "imagem" });
+    }
+  };
+
+  const removerAnexo = () => setArquivoAnexo(null);
   const toggleScribe = () => {
     if (estaGravando) {
       setEstaGravando(false);
@@ -31,6 +85,44 @@ export default function NovoRegistroModal() {
       setEstaGravando(true);
       // Limpa as notas ou adiciona um aviso que está ouvindo
       setNotas("Escutando a consulta...\n");
+    }
+  };
+
+  const salvarRegistro = async () => {
+    // 1. Validação rápida para não salvar vazio
+    if (!titulo || !dataRegistro) {
+      Alert.alert("Aviso", "Por favor, preencha pelo menos o título e a data.");
+      return;
+    }
+
+    // 2. Montar o "pacote" de dados
+    const novoRegistro = {
+      id: Date.now().toString(), // Cria um ID único baseado na hora exata
+      tipo: tipoSelecionado,
+      titulo: titulo,
+      data: dataRegistro,
+      local: local,
+      notas: notas,
+      anexo: arquivoAnexo, // Salva o caminho da foto/PDF se houver
+    };
+
+    try {
+      // 3. Puxar o que já existe no cofre
+      const registrosSalvos = await AsyncStorage.getItem("@heliora_registros");
+      let listaRegistros = registrosSalvos ? JSON.parse(registrosSalvos) : [];
+
+      // 4. Adicionar o novo e guardar de volta
+      listaRegistros.push(novoRegistro);
+      await AsyncStorage.setItem(
+        "@heliora_registros",
+        JSON.stringify(listaRegistros),
+      );
+
+      Alert.alert("Sucesso!", "Registro salvo com segurança no seu celular!");
+      router.back(); // Volta para a tela anterior
+    } catch (err) {
+      console.error("Erro ao salvar:", err);
+      Alert.alert("Erro", "Não foi possível salvar os dados.");
     }
   };
 
@@ -104,6 +196,8 @@ export default function NovoRegistroModal() {
           style={styles.input}
           placeholder="Digite o título..."
           placeholderTextColor="#999"
+          value={titulo} // <- LIGANDO O VALOR
+          onChangeText={setTitulo} // <- LIGANDO A FUNÇÃO
         />
 
         <Text style={styles.label}>Data</Text>
@@ -111,6 +205,8 @@ export default function NovoRegistroModal() {
           style={styles.input}
           placeholder="DD/MM/AAAA"
           placeholderTextColor="#999"
+          value={dataRegistro} // <- LIGANDO O VALOR
+          onChangeText={setDataRegistro} // <- LIGANDO A FUNÇÃO
         />
 
         <Text style={styles.label}>
@@ -120,62 +216,69 @@ export default function NovoRegistroModal() {
           style={styles.input}
           placeholder="Nome do médico ou local..."
           placeholderTextColor="#999"
-        />
-
-        <Text style={styles.label}>Notas ou Transcrição IA</Text>
-        <TextInput
-          style={[styles.input, styles.textArea]}
-          placeholder="Escreva detalhes ou use a IA para preencher..."
-          placeholderTextColor="#999"
-          multiline={true}
-          value={notas}
-          onChangeText={setNotas}
+          value={local} // <- LIGANDO O VALOR
+          onChangeText={setLocal} // <- LIGANDO A FUNÇÃO
         />
 
         {/* ANEXO */}
-        <Text style={styles.label}>Anexos (Receitas ou Laudos)</Text>
-        <View style={styles.anexoContainer}>
-          {temImagem ? (
-            <TouchableOpacity
-              style={styles.previewImagem}
-              onPress={() => setTemImagem(false)}
-            >
-              <FontAwesome name="file-image-o" size={40} color="#4A729A" />
-              <Text style={styles.textoPreview}>
-                Imagem anexada (Toque para remover)
-              </Text>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              style={styles.botaoAnexo}
-              onPress={() => setTemImagem(true)}
-            >
-              <FontAwesome name="camera" size={20} color="#4A729A" />
-              <Text style={styles.textoAnexo}>Tirar foto ou anexar PDF</Text>
-            </TouchableOpacity>
-          )}
+        <Text style={styles.label}>Anexos (Receitas, Laudos ou PDF)</Text>
 
-          {tipoSelecionado === "Exame" && !temImagem && (
-            <Text
-              style={{
-                fontSize: 11,
-                color: "#A0AEC0",
-                marginTop: 8,
-                textAlign: "center",
-              }}
-            >
-              Dica: Anexe o laudo do laboratório para consulta rápida.
-            </Text>
+        <View style={styles.anexoContainer}>
+          {arquivoAnexo ? (
+            <View style={styles.previewContainer}>
+              {arquivoAnexo.tipo === "imagem" ? (
+                <Image
+                  source={{ uri: arquivoAnexo.uri }}
+                  style={styles.imagemPreview}
+                />
+              ) : (
+                <View style={styles.arquivoPdfContainer}>
+                  <FontAwesome name="file-pdf-o" size={40} color="#E53E3E" />
+                  <Text style={styles.textoNomeArquivo} numberOfLines={1}>
+                    {arquivoAnexo.nome}
+                  </Text>
+                </View>
+              )}
+              <TouchableOpacity
+                style={styles.botaoRemoverImagem}
+                onPress={removerAnexo}
+              >
+                <FontAwesome name="trash" size={16} color="#FFF" />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.botoesAnexoContainer}>
+              <TouchableOpacity
+                style={styles.botaoAnexoPequeno}
+                onPress={tirarFoto}
+              >
+                <FontAwesome name="camera" size={20} color="#4A729A" />
+                <Text style={styles.textoAnexoPequeno}>Câmera</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.botaoAnexoPequeno}
+                onPress={escolherDaGaleria}
+              >
+                <FontAwesome name="image" size={20} color="#4A729A" />
+                <Text style={styles.textoAnexoPequeno}>Galeria</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.botaoAnexoPequeno}
+                onPress={anexarArquivo}
+              >
+                <FontAwesome name="file-text" size={20} color="#4A729A" />
+                <Text style={styles.textoAnexoPequeno}>Arquivos</Text>
+              </TouchableOpacity>
+            </View>
           )}
         </View>
 
         {/* BOTÃO SALVAR */}
         <TouchableOpacity
           style={styles.botaoSalvar}
-          onPress={() => {
-            alert("Registro salvo com sucesso!");
-            router.back();
-          }}
+          onPress={salvarRegistro} // <- CHAMANDO NOSSA NOVA FUNÇÃO AQUI
         >
           <Text style={styles.textoSalvar}>Salvar Registro</Text>
         </TouchableOpacity>
