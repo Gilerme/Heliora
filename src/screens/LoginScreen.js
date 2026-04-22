@@ -1,32 +1,34 @@
-import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  SafeAreaView,
+import React, { useState } from "react";
+import {
   KeyboardAvoidingView,
-  Platform
-} from 'react-native';
+  Platform,
+  SafeAreaView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
-import { useRouter } from 'expo-router';
-import { styles } from '../styles/LoginStyles';
+import { useRouter } from "expo-router";
+import { styles } from "../styles/LoginStyles";
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState('');
-  const [senha, setSenha] = useState('');
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
 
-    const router = useRouter();
+  const router = useRouter();
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.content}
       >
         {/* Cabeçalho / Logo */}
         <View style={styles.header}>
           <Text style={styles.logoTexto}>Heliora</Text>
-          <Text style={styles.subtitulo}>Seu histórico médico em suas mãos.</Text>
+          <Text style={styles.subtitulo}>
+            Seu histórico médico em suas mãos.
+          </Text>
         </View>
 
         {/* Formulário */}
@@ -52,14 +54,17 @@ export default function LoginScreen() {
             onChangeText={setSenha}
           />
 
-          <TouchableOpacity style={styles.botaoEsqueci}>
+          <TouchableOpacity
+            style={styles.botaoEsqueci}
+            onPress={() => router.push("/esqueci-senha")}
+          >
             <Text style={styles.textoEsqueci}>Esqueceu a senha?</Text>
           </TouchableOpacity>
 
           {/* Botão de Entrar */}
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.botaoPrincipal}
-            onPress={() => router.replace('/(tabs)')}
+            onPress={() => router.replace("/(tabs)")}
           >
             <Text style={styles.textoBotaoPrincipal}>Entrar</Text>
           </TouchableOpacity>
@@ -68,7 +73,7 @@ export default function LoginScreen() {
         {/* Rodapé - Cadastro */}
         <View style={styles.footer}>
           <Text style={styles.textoFooter}>Ainda não tem uma conta? </Text>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push("/cadastro")}>
             <Text style={styles.textoCadastro}>Cadastre-se</Text>
           </TouchableOpacity>
         </View>
