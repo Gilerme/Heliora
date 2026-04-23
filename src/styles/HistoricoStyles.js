@@ -14,7 +14,7 @@ export const styles = StyleSheet.create({
   tituloTela: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#2D3748",
+    color: "#2051b9",
   },
   descricao: {
     fontSize: 14,
@@ -77,5 +77,22 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 40,
     lineHeight: 24,
+  },
+  barraPesquisa: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    marginHorizontal: 20,
+    marginBottom: 15,
+    paddingHorizontal: 15,
+    height: 50,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    elevation: 2, // Sombra suave no Android
+    shadowColor: "#000", // Sombra no iOS
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
 });

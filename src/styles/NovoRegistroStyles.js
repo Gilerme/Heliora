@@ -42,8 +42,9 @@ export const styles = StyleSheet.create({
     borderColor: "#E2E8F0",
   },
   textArea: {
-    height: 120,
+    height: 150,
     textAlignVertical: "top",
+    paddingVertical: 15,
   },
   // --- Estilos dos Botões de Tipo (Consulta/Exame/Vacina) ---
   tipoContainer: {

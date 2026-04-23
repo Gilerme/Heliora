@@ -1,8 +1,11 @@
 import { FontAwesome } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
 import {
+  Alert,
+  DeviceEventEmitter,
   Image,
   SafeAreaView,
   ScrollView,
@@ -17,6 +20,50 @@ export default function DetalhesRegistroScreen() {
   const params = useLocalSearchParams();
 
   const registro = params.dados ? JSON.parse(params.dados) : null;
+
+  const confirmarExclusao = () => {
+    Alert.alert(
+      "Excluir Registro",
+      "Tem certeza que deseja apagar este documento? Essa ação não pode ser desfeita.",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Sim, Excluir",
+          style: "destructive", // Deixa o botão vermelho no iOS
+          onPress: excluirRegistro,
+        },
+      ],
+    );
+  };
+
+  const excluirRegistro = async () => {
+    try {
+      const registrosSalvos = await AsyncStorage.getItem("@heliora_registros");
+      let lista = registrosSalvos ? JSON.parse(registrosSalvos) : [];
+
+      // Filtra os itens. Vai manter na lista apenas quem tiver a DATA diferente do item atual.
+      const novaLista = lista.filter((item) => item.data !== registro.data);
+
+      await AsyncStorage.setItem(
+        "@heliora_registros",
+        JSON.stringify(novaLista),
+      );
+
+      Alert.alert("Sucesso", "Registro apagado com sucesso!", [
+        {
+          text: "OK",
+          onPress: () => {
+            // "Grita" no rádio comunicador que a lista mudou
+            DeviceEventEmitter.emit("atualizarHistorico");
+            router.back();
+          },
+        },
+      ]);
+    } catch (error) {
+      console.error("Erro ao excluir:", error);
+      Alert.alert("Erro", "Não foi possível excluir o registro.");
+    }
+  };
 
   if (!registro) {
     return (
@@ -38,7 +85,24 @@ export default function DetalhesRegistroScreen() {
         >
           <FontAwesome name="arrow-left" size={20} color="#4A729A" />
         </TouchableOpacity>
-        <Text style={styles.tituloHeader}>Detalhes do Registro</Text>
+        <Text style={[styles.tituloHeader, { flex: 1 }]}>
+          Detalhes do Registro
+        </Text>
+        <TouchableOpacity
+          onPress={() =>
+            router.push({
+              pathname: "/editar",
+              params: { dados: JSON.stringify(registro) },
+            })
+          }
+          style={{ padding: 10, marginRight: 5 }}
+        >
+          <FontAwesome name="pencil" size={24} color="#4A729A" />
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={confirmarExclusao} style={{ padding: 10 }}>
+          <FontAwesome name="trash-o" size={24} color="#E53E3E" />
+        </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>

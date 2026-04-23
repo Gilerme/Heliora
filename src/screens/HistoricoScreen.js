@@ -3,9 +3,11 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect, useRouter } from "expo-router"; // Importante para recarregar a tela
 import React, { useCallback, useState } from "react";
 import {
+  DeviceEventEmitter,
   FlatList,
   SafeAreaView,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -13,11 +15,26 @@ import { styles } from "../styles/HistoricoStyles";
 
 export default function HistoricoScreen() {
   const [registros, setRegistros] = useState([]);
+  const [searchText, setSearchText] = useState("");
   const router = useRouter();
   // Recarrega os dados toda vez que a aba ganha foco
+
   useFocusEffect(
     useCallback(() => {
+      // 1. CARREGA OS DADOS LOGO DE CARA QUANDO A TELA ABRE
       carregarRegistros();
+
+      // 2. Fica escutando o aviso da tela de detalhes caso algo seja apagado
+      const listener = DeviceEventEmitter.addListener(
+        "atualizarHistorico",
+        () => {
+          carregarRegistros();
+        },
+      );
+
+      return () => {
+        listener.remove();
+      };
     }, []),
   );
 
@@ -91,6 +108,24 @@ export default function HistoricoScreen() {
       </TouchableOpacity>
     );
   };
+  const registrosFiltrados = registros.filter((item) => {
+    if (searchText === "") return true; // Se não digitou nada, mostra tudo
+
+    const termo = searchText.toLowerCase();
+
+    // Verifica se o termo digitado existe no título, local ou tipo
+    const matchTitulo = item.titulo
+      ? item.titulo.toLowerCase().includes(termo)
+      : false;
+    const matchLocal = item.local
+      ? item.local.toLowerCase().includes(termo)
+      : false;
+    const matchTipo = item.tipo
+      ? item.tipo.toLowerCase().includes(termo)
+      : false;
+
+    return matchTitulo || matchLocal || matchTipo;
+  });
 
   return (
     <SafeAreaView style={styles.container}>
@@ -101,18 +136,38 @@ export default function HistoricoScreen() {
         </Text>
       </View>
 
+      {/* 🚨 NOVA BARRA DE BUSCA (Estilizada inline para facilitar) */}
+      <View style={styles.barraPesquisa}>
+        <FontAwesome name="search" size={20} color="#A0AEC0" />
+        <TextInput
+          style={{ flex: 1, marginLeft: 10, fontSize: 16, color: "#2D3748" }}
+          placeholder="Buscar consulta, local ou tipo..."
+          placeholderTextColor="#A0AEC0"
+          value={searchText}
+          onChangeText={setSearchText}
+        />
+        {/* Botão de "X" que só aparece se tiver algo digitado */}
+        {searchText.length > 0 && (
+          <TouchableOpacity
+            onPress={() => setSearchText("")}
+            style={{ padding: 5 }}
+          >
+            <FontAwesome name="times-circle" size={20} color="#A0AEC0" />
+          </TouchableOpacity>
+        )}
+      </View>
+
       <FlatList
-        data={registros}
+        data={registrosFiltrados} // 🚨 MUDE AQUI: De 'registros' para 'registrosFiltrados'
         keyExtractor={(item) => item.id}
         renderItem={renderizarItem}
         contentContainerStyle={styles.listaContainer}
         showsVerticalScrollIndicator={false}
-        // Mostra isso caso o cofre esteja vazio
         ListEmptyComponent={
           <Text style={styles.mensagemVazia}>
-            {
-              "Você ainda não tem nenhum registro salvo. Adicione no botão '+' na tela inicial!"
-            }
+            {searchText !== ""
+              ? "Nenhum resultado encontrado para a sua busca."
+              : "Você ainda não tem nenhum registro salvo. Adicione no botão '+' na tela inicial!"}
           </Text>
         }
       />
