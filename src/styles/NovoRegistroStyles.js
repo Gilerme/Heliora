@@ -42,8 +42,9 @@ export const styles = StyleSheet.create({
     borderColor: "#E2E8F0",
   },
   textArea: {
-    height: 120,
+    height: 150,
     textAlignVertical: "top",
+    paddingVertical: 15,
   },
   // --- Estilos dos Botões de Tipo (Consulta/Exame/Vacina) ---
   tipoContainer: {
@@ -124,40 +125,48 @@ export const styles = StyleSheet.create({
   },
   // --- Estilos de Anexos ---
   anexoContainer: {
-    marginTop: 20,
-    backgroundColor: "#FFFFFF",
+    marginTop: 8,
+    marginBottom: 24,
+  },
+
+  // --- NOVOS ESTILOS PARA OS BOTÕES LADO A LADO ---
+  botoesAnexoContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 8,
+  },
+  botaoAnexoPequeno: {
+    flex: 1,
+    backgroundColor: "#F7FAFC",
+    borderWidth: 1,
+    borderColor: "#CBD5E0",
+    borderStyle: "dashed",
+    borderRadius: 12,
+    paddingVertical: 15, // Diminuímos um pouco o padding
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  textoAnexoPequeno: {
+    color: "#4A729A",
+    fontWeight: "600",
+    marginTop: 4,
+    fontSize: 12, // Diminuímos a fonte para caber os 3
+  },
+  arquivoPdfContainer: {
+    width: "100%",
+    height: 120,
+    backgroundColor: "#FFF5F5",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderStyle: "dashed",
-    padding: 20,
-    alignItems: "center",
-  },
-  botaoAnexo: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F0F4F8",
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
-  },
-  textoAnexo: {
-    marginLeft: 10,
-    fontSize: 14,
-    color: "#4A729A",
-    fontWeight: "bold",
-  },
-  previewImagem: {
-    width: "100%",
-    height: 150,
-    backgroundColor: "#EDF2F7",
-    borderRadius: 8,
-    marginTop: 10,
+    borderColor: "#FED7D7",
     justifyContent: "center",
     alignItems: "center",
+    padding: 20,
   },
-  textoPreview: {
-    color: "#718096",
-    fontSize: 12,
+  textoNomeArquivo: {
+    marginTop: 10,
+    color: "#333",
+    fontWeight: "500",
+    fontSize: 14,
   },
 });
