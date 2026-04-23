@@ -1,9 +1,11 @@
 import { FontAwesome } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect, useRouter } from "expo-router";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
+  DeviceEventEmitter,
   FlatList,
+  Image,
   Modal,
   SafeAreaView,
   ScrollView,
@@ -18,6 +20,8 @@ export default function HomeScreen() {
   const [ultimoRegistro, setUltimoRegistro] = useState(null);
   const [exames, setExames] = useState([]);
   const [modalExamesVisivel, setModalExamesVisivel] = useState(false);
+  const [nomeUsuario, setNomeUsuario] = useState("Usuário");
+  const [fotoUsuario, setFotoUsuario] = useState(null);
 
   const carregarDadosHome = useCallback(async () => {
     try {
@@ -52,6 +56,39 @@ export default function HomeScreen() {
       params: { dados: JSON.stringify(item) },
     });
   };
+
+  useEffect(() => {
+    carregarPerfil();
+
+    // Fica escutando o evento emitido pela tela de Perfil
+    const listener = DeviceEventEmitter.addListener(
+      "atualizarPerfilHome",
+      () => {
+        carregarPerfil();
+      },
+    );
+
+    return () => {
+      listener.remove(); // Limpa o ouvinte por segurança
+    };
+  }, []);
+
+  const carregarPerfil = async () => {
+    try {
+      const dados = await AsyncStorage.getItem("@heliora_perfil");
+      if (dados) {
+        const perfil = JSON.parse(dados);
+        if (perfil.nome) {
+          setNomeUsuario(perfil.nome.split(" ")[0]); // Pega só o primeiro nome
+        }
+        if (perfil.fotoPerfil) {
+          setFotoUsuario(perfil.fotoPerfil);
+        }
+      }
+    } catch (e) {
+      console.error("Erro ao carregar perfil na Home", e);
+    }
+  };
   return (
     <SafeAreaView style={styles.container}>
       {/* Usando ScrollView para permitir rolagem caso a tela fique cheia */}
@@ -60,14 +97,21 @@ export default function HomeScreen() {
         <View style={styles.header}>
           <View>
             <Text style={styles.saudacao}>Olá,</Text>
-            <Text style={styles.nomeUsuario}>Bianca 👋</Text>
+            <Text style={styles.nomeUsuario}>{nomeUsuario} 👋</Text>
           </View>
 
           <TouchableOpacity
             style={styles.perfilBotao}
             onPress={() => router.push("/perfil")}
           >
-            <FontAwesome name="user" size={24} color="#4A729A" />
+            {fotoUsuario ? (
+              <Image
+                source={{ uri: fotoUsuario }}
+                style={{ width: 50, height: 50, borderRadius: 25 }}
+              />
+            ) : (
+              <FontAwesome name="user" size={24} color="#4A729A" />
+            )}
           </TouchableOpacity>
         </View>
 
