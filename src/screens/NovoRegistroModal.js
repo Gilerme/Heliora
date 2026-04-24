@@ -2,8 +2,9 @@ import { FontAwesome } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
+import * as Notifications from "expo-notifications";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   Image,
@@ -42,6 +43,25 @@ export default function NovoRegistroModal() {
 
     setDataRegistro(textoLimpo);
   };
+
+  useEffect(() => {
+    // Função para pedir permissão
+    const pedirPermissao = async () => {
+      const { status: existingStatus } =
+        await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+      if (existingStatus !== "granted") {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+      if (finalStatus !== "granted") {
+        console.log("Permissão para notificações negada!");
+        return;
+      }
+    };
+
+    pedirPermissao();
+  }, []);
 
   const anexarArquivo = async () => {
     try {
@@ -104,6 +124,52 @@ export default function NovoRegistroModal() {
     }
   };
 
+  const agendarNotificacaoMedica = async (titulo, dataTexto, tipo) => {
+    try {
+      const partes = dataTexto.split("/");
+      if (partes.length !== 3) return; // Segurança: Se a data estiver incompleta, não faz nada
+
+      const [dia, mes, ano] = partes;
+      const dataAlvo = new Date(ano, mes - 1, dia);
+
+      // Define a notificação para tocar às 08:00 da manhã daquele dia
+      dataAlvo.setHours(8, 0, 0, 0);
+
+      // Validação extra: Verifica se a data gerada é válida no JavaScript
+      if (isNaN(dataAlvo.getTime())) {
+        console.log("Data inválida detectada");
+        return;
+      }
+
+      // Se a data/hora alvo for menor que o momento atual, não agenda nada
+      if (dataAlvo < new Date()) {
+        console.log(
+          "Data no passado ou exame de hoje após as 8h. Notificação não agendada.",
+        );
+        return;
+      }
+
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: `Lembrete Heliora 🩺`,
+          body: `Hoje você tem: ${titulo} (${tipo}). Não se esqueça!`,
+          sound: true,
+          android: {
+            channelId: "default",
+          },
+        },
+        trigger: {
+          date: dataAlvo,
+          channelId: "default",
+        },
+      });
+
+      console.log(`Sucesso! Notificação agendada para: ${dataAlvo}`);
+    } catch (error) {
+      console.error("Erro ao agendar notificação:", error);
+    }
+  };
+
   const salvarRegistro = async () => {
     // 1. Validação rápida para não salvar vazio
     if (!titulo || !dataRegistro) {
@@ -133,6 +199,8 @@ export default function NovoRegistroModal() {
         "@heliora_registros",
         JSON.stringify(listaRegistros),
       );
+
+      await agendarNotificacaoMedica(titulo, dataRegistro, tipoSelecionado);
 
       Alert.alert("Sucesso!", "Registro salvo com segurança no seu celular!");
       router.back(); // Volta para a tela anterior

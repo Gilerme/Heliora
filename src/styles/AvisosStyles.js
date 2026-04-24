@@ -4,76 +4,82 @@ export const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F0F4F8",
-    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight + 20 : 40,
   },
   header: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 24,
-    marginTop: 20,
-    marginBottom: 24,
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight + 20 : 60,
+    paddingBottom: 20,
+    backgroundColor: "#FFFFFF",
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
   },
-  tituloTela: {
-    fontSize: 24,
+  title: {
+    fontSize: 20,
     fontWeight: "bold",
-    color: "#D69E2E", // Um tom de amarelo/mostarda escuro para atenção/avisos
+    color: "#4A729A",
   },
-  botaoFechar: {
-    padding: 10,
-  },
-  content: {
-    paddingHorizontal: 24,
-  },
-  descricao: {
-    fontSize: 14,
-    color: "#666666",
-    marginBottom: 20,
-    lineHeight: 20,
+  listaContainer: {
+    padding: 20,
   },
   cardAviso: {
+    backgroundColor: "#FFF",
+    borderRadius: 15,
+    padding: 15,
     flexDirection: "row",
-    backgroundColor: "#FFFFFF",
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 16,
+    alignItems: "center",
+    marginBottom: 15,
     elevation: 2,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    alignItems: "center",
+    shadowRadius: 3,
   },
-  iconeBox: {
+  iconeContainer: {
     width: 50,
     height: 50,
     borderRadius: 25,
+    backgroundColor: "#4A729A",
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 16,
+    marginRight: 15,
   },
-  textosBox: {
+  cardInfo: {
     flex: 1,
   },
-  tituloAviso: {
+  cardTitulo: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#333333",
-    marginBottom: 4,
+    color: "#2D3748",
+    marginBottom: 5,
   },
-  dataAviso: {
+  cardData: {
     fontSize: 14,
     color: "#718096",
-    marginBottom: 8,
   },
-  badge: {
-    alignSelf: "flex-start",
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 12,
+  botaoDetalhes: {
+    padding: 10,
   },
-  badgeTexto: {
-    fontSize: 12,
+  emptyState: {
+    alignItems: "center",
+    marginTop: 100,
+  },
+  emptyText: {
+    fontSize: 18,
     fontWeight: "bold",
+    color: "#4A729A",
+    marginTop: 20,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: "#A0AEC0",
+    marginTop: 10,
+    textAlign: "center",
+    paddingHorizontal: 20,
   },
 });
