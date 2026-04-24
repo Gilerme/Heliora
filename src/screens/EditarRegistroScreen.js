@@ -2,10 +2,11 @@ import { FontAwesome } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
-import { useRouter } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router"; // Adicionado useLocalSearchParams
 import React, { useState } from "react";
 import {
   Alert,
+  DeviceEventEmitter, // Adicionado para avisar o histórico
   Image,
   SafeAreaView,
   ScrollView,
@@ -14,18 +15,49 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { styles } from "../styles/NovoRegistroStyles";
+import { styles } from "../styles/NovoRegistroStyles"; // Reutilizando os mesmos estilos!
 
-export default function NovoRegistroModal() {
+export default function EditarRegistroScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams();
 
-  const [tipoSelecionado, setTipoSelecionado] = useState("Consulta"); // Pode ser Consulta, Exame ou Vacina
+  // 1. Recebe os dados do registro que vamos editar
+  const registroOriginal = params.dados ? JSON.parse(params.dados) : null;
+
+  // 2. Preenche os campos (useState) com os dados originais ao invés de começar vazio
+  const [tipoSelecionado, setTipoSelecionado] = useState(
+    registroOriginal?.tipo || "Consulta",
+  );
   const [estaGravando, setEstaGravando] = useState(false);
-  const [notas, setNotas] = useState("");
-  const [arquivoAnexo, setArquivoAnexo] = useState(null);
-  const [titulo, setTitulo] = useState("");
-  const [dataRegistro, setDataRegistro] = useState("");
-  const [local, setLocal] = useState("");
+  const [notas, setNotas] = useState(registroOriginal?.notas || "");
+  const [arquivoAnexo, setArquivoAnexo] = useState(
+    registroOriginal?.anexo || null,
+  );
+  const [titulo, setTitulo] = useState(registroOriginal?.titulo || "");
+  const [dataRegistro, setDataRegistro] = useState(
+    registroOriginal?.data || "",
+  );
+  const [local, setLocal] = useState(registroOriginal?.local || "");
+
+  const anexarArquivo = async () => {
+    try {
+      const resultado = await DocumentPicker.getDocumentAsync({
+        type: "application/pdf",
+        copyToCacheDirectory: true,
+      });
+
+      if (!resultado.canceled) {
+        setArquivoAnexo({
+          uri: resultado.assets[0].uri,
+          nome: resultado.assets[0].name,
+          tipo: "pdf",
+        });
+      }
+    } catch (err) {
+      console.error("Erro ao anexar documento:", err);
+      Alert.alert("Erro", "Não foi possível selecionar o arquivo.");
+    }
+  };
 
   const formatarData = (texto) => {
     let textoLimpo = texto.replace(/\D/g, "");
@@ -41,27 +73,6 @@ export default function NovoRegistroModal() {
     }
 
     setDataRegistro(textoLimpo);
-  };
-
-  const anexarArquivo = async () => {
-    try {
-      const resultado = await DocumentPicker.getDocumentAsync({
-        type: "application/pdf", // Filtra apenas para PDFs
-        copyToCacheDirectory: true,
-      });
-
-      if (!resultado.canceled) {
-        // O Expo Document Picker retorna os dados dentro de assets[0]
-        setArquivoAnexo({
-          uri: resultado.assets[0].uri,
-          nome: resultado.assets[0].name,
-          tipo: "pdf",
-        });
-      }
-    } catch (err) {
-      console.error("Erro ao anexar documento:", err);
-      Alert.alert("Erro", "Não foi possível selecionar o arquivo.");
-    }
   };
 
   const tirarFoto = async () => {
@@ -89,63 +100,84 @@ export default function NovoRegistroModal() {
   };
 
   const removerAnexo = () => setArquivoAnexo(null);
+
   const toggleScribe = () => {
     if (estaGravando) {
       setEstaGravando(false);
-      // Aqui, futuramente, a IA vai jogar o texto final resumido
-      setNotas(
-        notas +
-          "\n[IA]: Paciente relata dores de cabeça frequentes nos últimos 3 dias. Pressão arterial medida: 120x80. Recomendado uso de analgésico e repouso.",
-      );
+      const agora = new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      const resumoIA = `\n\n[Transcrição IA - ${agora}]:\nO paciente mencionou melhora nos sintomas após o início do último medicamento. Relata leve tontura pela manhã.`;
+      setNotas((prevNotas) => prevNotas + resumoIA);
     } else {
       setEstaGravando(true);
-      // Limpa as notas ou adiciona um aviso que está ouvindo
-      setNotas("Escutando a consulta...\n");
     }
   };
 
-  const salvarRegistro = async () => {
-    // 1. Validação rápida para não salvar vazio
+  const atualizarRegistro = async () => {
     if (!titulo || !dataRegistro) {
       Alert.alert("Aviso", "Por favor, preencha pelo menos o título e a data.");
       return;
     }
 
-    // 2. Montar o "pacote" de dados
-    const novoRegistro = {
-      id: Date.now().toString(), // Cria um ID único baseado na hora exata
+    // Monta o pacote atualizado, MANTENDO O MESMO ID do registro original
+    const registroAtualizado = {
+      id: registroOriginal.id,
       tipo: tipoSelecionado,
       titulo: titulo,
       data: dataRegistro,
       local: local,
       notas: notas,
-      anexo: arquivoAnexo, // Salva o caminho da foto/PDF se houver
+      anexo: arquivoAnexo,
     };
 
     try {
-      // 3. Puxar o que já existe no cofre
       const registrosSalvos = await AsyncStorage.getItem("@heliora_registros");
       let listaRegistros = registrosSalvos ? JSON.parse(registrosSalvos) : [];
 
-      // 4. Adicionar o novo e guardar de volta
-      listaRegistros.push(novoRegistro);
+      // Procura onde está o registro antigo na lista e substitui pelo novo
+      const index = listaRegistros.findIndex(
+        (item) => item.id === registroOriginal.id,
+      );
+
+      if (index !== -1) {
+        listaRegistros[index] = registroAtualizado; // Atualiza
+      } else {
+        listaRegistros.push(registroAtualizado); // Prevenção de erro
+      }
+
       await AsyncStorage.setItem(
         "@heliora_registros",
         JSON.stringify(listaRegistros),
       );
 
-      Alert.alert("Sucesso!", "Registro salvo com segurança no seu celular!");
-      router.back(); // Volta para a tela anterior
+      Alert.alert("Sucesso!", "Registro atualizado com sucesso!", [
+        {
+          text: "OK",
+          onPress: () => {
+            // 1. Avisa o Histórico para recarregar a lista
+            DeviceEventEmitter.emit("atualizarHistorico");
+
+            // 2. Substitui a tela atual pela tela de detalhes, enviando os dados NOVOS
+            router.replace({
+              pathname: "/detalhes",
+              params: { dados: JSON.stringify(registroAtualizado) },
+            });
+          },
+        },
+      ]);
     } catch (err) {
-      console.error("Erro ao salvar:", err);
-      Alert.alert("Erro", "Não foi possível salvar os dados.");
+      console.error("Erro ao atualizar:", err);
+      Alert.alert("Erro", "Não foi possível atualizar os dados.");
     }
   };
 
   return (
     <SafeAreaView style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
       <View style={styles.header}>
-        <Text style={styles.tituloTela}>Novo Registro</Text>
+        <Text style={styles.tituloTela}>Editar Registro</Text>
         <TouchableOpacity
           style={styles.botaoFechar}
           onPress={() => router.back()}
@@ -158,7 +190,6 @@ export default function NovoRegistroModal() {
         style={styles.formContainer}
         showsVerticalScrollIndicator={false}
       >
-        {/* SELETOR DE TIPO */}
         <Text style={styles.label}>O que você deseja adicionar?</Text>
         <View style={styles.tipoContainer}>
           {["Consulta", "Exame", "Vacina"].map((tipo) => (
@@ -182,7 +213,6 @@ export default function NovoRegistroModal() {
           ))}
         </View>
 
-        {/* SCRIBE MEDICAL (SÓ APARECE SE FOR CONSULTA) */}
         {tipoSelecionado === "Consulta" && (
           <View>
             <View style={styles.scribeContainer}>
@@ -202,15 +232,13 @@ export default function NovoRegistroModal() {
               <Text style={styles.scribeTexto}>
                 {estaGravando
                   ? "Gravando... Toque para parar e resumir com IA"
-                  : "Scribe IA: Transcrever Consulta"}
+                  : "Scribe IA: Adicionar à transcrição"}
               </Text>
             </View>
-
-            {/* ÁREA DE NOTAS E TRANSCRIÇÃO */}
             <Text style={styles.label}>Notas da Consulta / Transcrição</Text>
             <TextInput
               style={[styles.input, styles.textArea]}
-              placeholder="A transcrição da IA aparecerá aqui, ou você pode escrever suas próprias notas..."
+              placeholder="Notas ou transcrição..."
               placeholderTextColor="#999"
               multiline={true}
               numberOfLines={6}
@@ -220,14 +248,13 @@ export default function NovoRegistroModal() {
           </View>
         )}
 
-        {/* FORMULÁRIO PADRÃO */}
         <Text style={styles.label}>Título (Ex: Clínico Geral)</Text>
         <TextInput
           style={styles.input}
           placeholder="Digite o título..."
           placeholderTextColor="#999"
-          value={titulo} // <- LIGANDO O VALOR
-          onChangeText={setTitulo} // <- LIGANDO A FUNÇÃO
+          value={titulo}
+          onChangeText={setTitulo}
         />
 
         <Text style={styles.label}>Data</Text>
@@ -235,10 +262,10 @@ export default function NovoRegistroModal() {
           style={styles.input}
           placeholder="DD/MM/AAAA"
           placeholderTextColor="#999"
-          value={dataRegistro} // <- LIGANDO O VALOR
+          value={dataRegistro}
           keyboardType="numeric"
           maxLength={10}
-          onChangeText={formatarData} // <- LIGANDO A FUNÇÃO
+          onChangeText={formatarData}
         />
 
         <Text style={styles.label}>
@@ -248,11 +275,10 @@ export default function NovoRegistroModal() {
           style={styles.input}
           placeholder="Nome do médico ou local..."
           placeholderTextColor="#999"
-          value={local} // <- LIGANDO O VALOR
-          onChangeText={setLocal} // <- LIGANDO A FUNÇÃO
+          value={local}
+          onChangeText={setLocal}
         />
 
-        {/* ANEXO */}
         <Text style={styles.label}>Anexos (Receitas, Laudos ou PDF)</Text>
 
         <View style={styles.anexoContainer}>
@@ -287,7 +313,6 @@ export default function NovoRegistroModal() {
                 <FontAwesome name="camera" size={20} color="#4A729A" />
                 <Text style={styles.textoAnexoPequeno}>Câmera</Text>
               </TouchableOpacity>
-
               <TouchableOpacity
                 style={styles.botaoAnexoPequeno}
                 onPress={escolherDaGaleria}
@@ -295,7 +320,6 @@ export default function NovoRegistroModal() {
                 <FontAwesome name="image" size={20} color="#4A729A" />
                 <Text style={styles.textoAnexoPequeno}>Galeria</Text>
               </TouchableOpacity>
-
               <TouchableOpacity
                 style={styles.botaoAnexoPequeno}
                 onPress={anexarArquivo}
@@ -307,13 +331,16 @@ export default function NovoRegistroModal() {
           )}
         </View>
 
-        {/* BOTÃO SALVAR */}
+        {/* Mudei o nome do botão para Atualizar */}
         <TouchableOpacity
           style={styles.botaoSalvar}
-          onPress={salvarRegistro} // <- CHAMANDO NOSSA NOVA FUNÇÃO AQUI
+          onPress={atualizarRegistro}
         >
-          <Text style={styles.textoSalvar}>Salvar Registro</Text>
+          <Text style={styles.textoSalvar}>Atualizar Registro</Text>
         </TouchableOpacity>
+
+        {/* Espaço extra no fim do scroll */}
+        <View style={{ height: 40 }} />
       </ScrollView>
     </SafeAreaView>
   );

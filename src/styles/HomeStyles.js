@@ -163,4 +163,83 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     color: "#666666",
   },
+  // Estilos do Card de Último Registro
+  cardUltimo: {
+    backgroundColor: "#FFF",
+    borderRadius: 15,
+    padding: 15,
+    flexDirection: "row",
+    alignItems: "center",
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  cardIconContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 12,
+    backgroundColor: "#F0F4F8",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 15,
+  },
+  cardTextContainer: { flex: 1 },
+  cardTitulo: { fontSize: 16, fontWeight: "bold", color: "#2D3748" },
+  cardSubtitulo: { fontSize: 14, color: "#718096", marginTop: 2 },
+
+  // Estilos do Modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "#F0F4F8", // Mesmo fundo cinza claro do app
+  },
+  modalContent: {
+    flex: 1,
+    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight + 10 : 40,
+    paddingHorizontal: 20,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 25,
+    paddingBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E2E8F0",
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#4A729A",
+  },
+  itemExameModal: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF", // Card branco para os itens
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+  },
+  tituloExameModal: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#2D3748",
+  },
+  dataExameModal: {
+    fontSize: 14,
+    color: "#718096",
+    marginTop: 2,
+  },
+  textoVazioModal: {
+    textAlign: "center",
+    marginTop: 40,
+    color: "#A0AEC0",
+    fontSize: 16,
+  },
 });
