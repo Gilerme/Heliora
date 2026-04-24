@@ -1,6 +1,7 @@
 import { FontAwesome } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   SafeAreaView,
   ScrollView,
@@ -9,22 +10,42 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { styles } from "../styles/CondicoesStyles"; // Reutilizando a estrutura de estilos
+import { styles } from "../styles/CondicoesStyles";
 
 export default function CondicoesScreen() {
   const router = useRouter();
-
-  // Estado para o texto que o usuário está digitando
   const [novaCondicao, setNovaCondicao] = useState("");
+  // 1. Iniciamos a lista vazia
+  const [listaCondicoes, setListaCondicoes] = useState([]);
 
-  // Lista de condições (pode começar com alguns exemplos ou vazia)
-  const [listaCondicoes, setListaCondicoes] = useState([
-    { id: "1", nome: "Hipertensão" },
-    { id: "2", nome: "Asma" },
-    { id: "3", nome: "Diabetes Tipo 2" },
-  ]);
+  // 2. Carrega as condições salvas assim que a tela abre
+  useEffect(() => {
+    carregarCondicoes();
+  }, []);
 
-  // Função para adicionar a nova condição à lista
+  const carregarCondicoes = async () => {
+    try {
+      const dadosSalvos = await AsyncStorage.getItem("@heliora_condicoes");
+      if (dadosSalvos) {
+        setListaCondicoes(JSON.parse(dadosSalvos));
+      }
+    } catch (error) {
+      console.error("Erro ao carregar condições:", error);
+    }
+  };
+
+  // 3. Função auxiliar para salvar no celular
+  const salvarCondicoesLocal = async (novaLista) => {
+    try {
+      await AsyncStorage.setItem(
+        "@heliora_condicoes",
+        JSON.stringify(novaLista),
+      );
+    } catch (error) {
+      console.error("Erro ao salvar condições:", error);
+    }
+  };
+
   const adicionarCondicao = () => {
     if (novaCondicao.trim() === "") return;
 
@@ -33,21 +54,22 @@ export default function CondicoesScreen() {
       nome: novaCondicao.trim(),
     };
 
-    setListaCondicoes([...listaCondicoes, novoObjeto]);
-    setNovaCondicao(""); // Limpa o campo após adicionar
+    const novaLista = [...listaCondicoes, novoObjeto];
+    setListaCondicoes(novaLista);
+    salvarCondicoesLocal(novaLista); // 🚨 Salva a atualização
+    setNovaCondicao("");
   };
 
-  // Função para remover uma condição da lista
   const removerCondicao = (idParaRemover) => {
     const listaFiltrada = listaCondicoes.filter(
       (item) => item.id !== idParaRemover,
     );
     setListaCondicoes(listaFiltrada);
+    salvarCondicoesLocal(listaFiltrada); // 🚨 Salva a atualização
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* CABEÇALHO */}
       <View style={styles.header}>
         <Text style={[styles.tituloTela, { color: "#2B6CB0" }]}>
           Condições Médicas
@@ -63,7 +85,6 @@ export default function CondicoesScreen() {
           especial de profissionais de saúde.
         </Text>
 
-        {/* ÁREA DE INPUT PARA NOVAS CONDIÇÕES */}
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
@@ -71,7 +92,7 @@ export default function CondicoesScreen() {
             placeholderTextColor="#A0AEC0"
             value={novaCondicao}
             onChangeText={setNovaCondicao}
-            onSubmitEditing={adicionarCondicao} // Adiciona ao apertar "Enter"
+            onSubmitEditing={adicionarCondicao}
           />
           <TouchableOpacity
             style={[styles.botaoAdicionar, { backgroundColor: "#3182CE" }]}
@@ -81,7 +102,6 @@ export default function CondicoesScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* LISTAGEM DE TAGS (AZUL) */}
         <View style={styles.tagsContainer}>
           {listaCondicoes.length === 0 ? (
             <Text style={{ color: "#999", fontStyle: "italic", marginTop: 10 }}>
@@ -109,7 +129,6 @@ export default function CondicoesScreen() {
             ))
           )}
         </View>
-
         <View style={{ height: 40 }} />
       </ScrollView>
     </SafeAreaView>
