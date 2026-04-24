@@ -1,119 +1,102 @@
 import { FontAwesome } from "@expo/vector-icons";
-import React from "react";
-import { SafeAreaView, ScrollView, Text, View } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect, useRouter } from "expo-router";
+import React, { useCallback, useState } from "react";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { styles } from "../styles/AvisosStyles";
 
 export default function AvisosScreen() {
-  // Mock de dados com diferentes status
-  const avisos = [
-    {
-      id: "1",
-      tipo: "exame",
-      titulo: "Exame de Sangue (Rotina)",
-      data: "Venceu há 5 dias",
-      status: "atrasado",
-      icone: "heartbeat",
-    },
-    {
-      id: "2",
-      tipo: "vacina",
-      titulo: "Reforço Antitetânica",
-      data: "Faltam 10 dias",
-      status: "proximo",
-      icone: "shield",
-    },
-    {
-      id: "3",
-      tipo: "consulta",
-      titulo: "Retorno Oftalmologista",
-      data: "Em 2 meses",
-      status: "futuro",
-      icone: "eye",
-    },
-  ];
+  const router = useRouter();
+  const [avisos, setAvisos] = useState([]);
 
-  // Função para definir as cores e ícones baseados no status e tipo
-  const obterEstilosStatus = (status) => {
-    switch (status) {
-      case "atrasado":
-        return {
-          bg: "#FED7D7",
-          text: "#C53030",
-          iconBg: "#FFF5F5",
-          iconColor: "#E53E3E",
-        };
-      case "proximo":
-        return {
-          bg: "#FEEBC8",
-          text: "#C05621",
-          iconBg: "#FFFAF0",
-          iconColor: "#DD6B20",
-        };
-      case "futuro":
-        return {
-          bg: "#EBF4FF",
-          text: "#2B6CB0",
-          iconBg: "#F0F4F8",
-          iconColor: "#4A729A",
-        };
-      default:
-        return {
-          bg: "#EDF2F7",
-          text: "#4A5568",
-          iconBg: "#F7FAFC",
-          iconColor: "#718096",
-        };
+  useFocusEffect(
+    useCallback(() => {
+      carregarAvisos();
+    }, []),
+  );
+
+  const carregarAvisos = async () => {
+    try {
+      const dados = await AsyncStorage.getItem("@heliora_registros");
+      if (dados) {
+        const lista = JSON.parse(dados);
+
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+
+        const eventosFuturos = lista.filter((item) => {
+          if (!item.data) return false;
+
+          const [dia, mes, ano] = item.data.split("/");
+          const dataItem = new Date(ano, mes - 1, dia);
+
+          return dataItem >= hoje;
+        });
+
+        eventosFuturos.sort((a, b) => {
+          const dataA = new Date(
+            a.data.split("/")[2],
+            a.data.split("/")[1] - 1,
+            a.data.split("/")[0],
+          );
+          const dataB = new Date(
+            b.data.split("/")[2],
+            b.data.split("/")[1] - 1,
+            b.data.split("/")[0],
+          );
+          return dataA - dataB;
+        });
+
+        setAvisos(eventosFuturos);
+      }
+    } catch (e) {
+      console.error("Erro ao carregar avisos:", e);
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.tituloTela}>Lembretes e Avisos</Text>
+        <TouchableOpacity onPress={() => router.back()} style={{ padding: 5 }}>
+          <FontAwesome name="arrow-left" size={20} color="#4A729A" />
+        </TouchableOpacity>
+        <Text style={styles.title}>Lembretes e Avisos</Text>
+        <View style={{ width: 30 }} />
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={styles.descricao}>
-          Fique de olho! Aqui estão seus exames próximos do vencimento, vacinas
-          pendentes e retornos médicos.
-        </Text>
-
-        {avisos.map((aviso) => {
-          const visual = obterEstilosStatus(aviso.status);
-
-          return (
-            <View key={aviso.id} style={styles.cardAviso}>
-              {/* Ícone dinâmico */}
-              <View
-                style={[styles.iconeBox, { backgroundColor: visual.iconBg }]}
-              >
+      <ScrollView contentContainerStyle={styles.listaContainer}>
+        {avisos.length === 0 ? (
+          <View style={styles.emptyState}>
+            <FontAwesome name="calendar-check-o" size={60} color="#CBD5E0" />
+            <Text style={styles.emptyText}>Nenhum evento médico próximo!</Text>
+            <Text style={styles.emptySubtext}>
+              Seus futuros exames e consultas aparecerão aqui.
+            </Text>
+          </View>
+        ) : (
+          avisos.map((item, index) => (
+            <View key={index} style={styles.cardAviso}>
+              <View style={styles.iconeContainer}>
                 <FontAwesome
-                  name={aviso.icone}
+                  name={item.tipo === "Consulta" ? "user-md" : "stethoscope"}
                   size={24}
-                  color={visual.iconColor}
+                  color="#FFF"
                 />
               </View>
-
-              {/* Informações */}
-              <View style={styles.textosBox}>
-                <Text style={styles.tituloAviso}>{aviso.titulo}</Text>
-                <Text style={styles.dataAviso}>{aviso.data}</Text>
-
-                {/* Badge (Etiqueta colorida) */}
-                <View style={[styles.badge, { backgroundColor: visual.bg }]}>
-                  <Text style={[styles.badgeTexto, { color: visual.text }]}>
-                    {aviso.status.toUpperCase()}
-                  </Text>
-                </View>
+              <View style={styles.cardInfo}>
+                <Text style={styles.cardTitulo}>{item.titulo}</Text>
+                <Text style={styles.cardData}>
+                  <FontAwesome name="calendar" size={14} color="#718096" />{" "}
+                  {item.data}
+                </Text>
               </View>
-
-              <FontAwesome name="chevron-right" size={16} color="#CCCCCC" />
+              <TouchableOpacity style={styles.botaoDetalhes}>
+                <FontAwesome name="bell" size={18} color="#4A729A" />
+              </TouchableOpacity>
             </View>
-          );
-        })}
-
-        <View style={{ height: 40 }} />
+          ))
+        )}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

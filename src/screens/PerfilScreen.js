@@ -110,7 +110,6 @@ export default function PerfilScreen() {
         style: "destructive", // Deixa o texto vermelho no iOS
         onPress: () => {
           // No futuro, se houver um token de autenticação, você limpa ele aqui
-          // Substitua '/login' pelo nome correto da sua rota inicial caso seja diferente (como '/')
           router.replace("/");
         },
       },

@@ -1,4 +1,4 @@
-import { FontAwesome } from "@expo/vector-icons";
+import { FontAwesome5 } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
@@ -110,7 +110,7 @@ export default function HomeScreen() {
                 style={{ width: 50, height: 50, borderRadius: 25 }}
               />
             ) : (
-              <FontAwesome name="user" size={24} color="#4A729A" />
+              <FontAwesome5 name="user" size={24} color="#4A729A" />
             )}
           </TouchableOpacity>
         </View>
@@ -133,7 +133,7 @@ export default function HomeScreen() {
 
           {/* Espaço reservado para a ilustração da médica */}
           <View style={styles.bannerImagePlaceholder}>
-            <FontAwesome
+            <FontAwesome5
               name="stethoscope"
               size={60}
               color="#FFFFFF"
@@ -150,7 +150,7 @@ export default function HomeScreen() {
             onPress={() => router.push("/alergias")}
           >
             <View style={styles.quickAccessIconBox}>
-              <FontAwesome name="shield" size={24} color="#4A729A" />
+              <FontAwesome5 name="allergies" size={24} color="#4A729A" />
             </View>
             <Text style={styles.quickAccessText}>Alergias</Text>
           </TouchableOpacity>
@@ -160,7 +160,7 @@ export default function HomeScreen() {
             onPress={() => router.push("/condicoes")}
           >
             <View style={styles.quickAccessIconBox}>
-              <FontAwesome name="heartbeat" size={24} color="#4A729A" />
+              <FontAwesome5 name="heartbeat" size={24} color="#4A729A" />
             </View>
             <Text style={styles.quickAccessText}>Condições</Text>
           </TouchableOpacity>
@@ -175,7 +175,7 @@ export default function HomeScreen() {
                 { backgroundColor: "#EBF8FF" },
               ]}
             >
-              <FontAwesome name="flask" size={24} color="#4A729A" />
+              <FontAwesome5 name="flask" size={24} color="#4A729A" />
             </View>
             <Text style={styles.quickAccessText}>Exames</Text>
           </TouchableOpacity>
@@ -191,13 +191,15 @@ export default function HomeScreen() {
               onPress={() => verDetalhes(ultimoRegistro)}
             >
               <View style={styles.cardIconContainer}>
-                <FontAwesome
+                <FontAwesome5
                   name={
                     ultimoRegistro.tipo === "Consulta"
                       ? "user-md"
                       : ultimoRegistro.tipo === "Exame"
                         ? "flask"
-                        : "vial"
+                        : ultimoRegistro.tipo === "Vacina"
+                          ? "syringe"
+                          : "medkit"
                   }
                   size={24}
                   color="#4A729A"
@@ -209,7 +211,7 @@ export default function HomeScreen() {
                   {ultimoRegistro.data} • {ultimoRegistro.local}
                 </Text>
               </View>
-              <FontAwesome name="chevron-right" size={16} color="#CBD5E0" />
+              <FontAwesome5 name="chevron-right" size={16} color="#CBD5E0" />
             </TouchableOpacity>
           ) : (
             <View style={styles.cardVazio}>
@@ -231,7 +233,7 @@ export default function HomeScreen() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Meus Exames</Text>
               <TouchableOpacity onPress={() => setModalExamesVisivel(false)}>
-                <FontAwesome name="close" size={28} color="#CBD5E0" />
+                <FontAwesome5 name="close" size={28} color="#CBD5E0" />
               </TouchableOpacity>
             </View>
 
@@ -246,7 +248,7 @@ export default function HomeScreen() {
                     verDetalhes(item);
                   }}
                 >
-                  <FontAwesome
+                  <FontAwesome5
                     name="file-text-o"
                     size={20}
                     color="#4A729A"
@@ -256,7 +258,7 @@ export default function HomeScreen() {
                     <Text style={styles.tituloExameModal}>{item.titulo}</Text>
                     <Text style={styles.dataExameModal}>{item.data}</Text>
                   </View>
-                  <FontAwesome name="angle-right" size={20} color="#4A729A" />
+                  <FontAwesome5 name="angle-right" size={20} color="#4A729A" />
                 </TouchableOpacity>
               )}
               ListEmptyComponent={

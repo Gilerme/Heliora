@@ -2,8 +2,9 @@ import { FontAwesome } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
+import * as Notifications from "expo-notifications";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   Image,
@@ -42,6 +43,25 @@ export default function NovoRegistroModal() {
 
     setDataRegistro(textoLimpo);
   };
+
+  useEffect(() => {
+    // Função para pedir permissão
+    const pedirPermissao = async () => {
+      const { status: existingStatus } =
+        await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+      if (existingStatus !== "granted") {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+      if (finalStatus !== "granted") {
+        console.log("Permissão para notificações negada!");
+        return;
+      }
+    };
+
+    pedirPermissao();
+  }, []);
 
   const anexarArquivo = async () => {
     try {
@@ -104,6 +124,50 @@ export default function NovoRegistroModal() {
     }
   };
 
+  const agendarNotificacaoMedica = async (titulo, dataTexto, tipo) => {
+    try {
+      const partes = dataTexto.split("/");
+      if (partes.length !== 3) return;
+
+      // 1. Convertendo para números inteiros (Isso previne o disparo imediato)
+      const dia = parseInt(partes[0], 10);
+      const mes = parseInt(partes[1], 10);
+      const ano = parseInt(partes[2], 10);
+
+      // 2. Criando a data corretamente
+      const dataAlvo = new Date(ano, mes - 1, dia, 8, 0, 0);
+
+      // 3. Validação de data futura
+      if (isNaN(dataAlvo.getTime()) || dataAlvo <= new Date()) {
+        console.log("Data inválida ou no passado. Ignorando agendamento.");
+        return;
+      }
+
+      // 4. Agendamento com o objeto de trigger correto
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: `Lembrete Heliora 🩺`,
+          body: `Hoje você tem: ${titulo} (${tipo}). Não se esqueça!`,
+          sound: true,
+          android: {
+            channelId: "default",
+          },
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.DATE,
+          date: dataAlvo,
+          channelId: "default",
+        },
+      });
+
+      console.log(
+        `Sucesso! Agendado para ${dataAlvo.toLocaleDateString()} às 08:00`,
+      );
+    } catch (error) {
+      console.error("Erro ao agendar notificação:", error);
+    }
+  };
+
   const salvarRegistro = async () => {
     // 1. Validação rápida para não salvar vazio
     if (!titulo || !dataRegistro) {
@@ -133,6 +197,8 @@ export default function NovoRegistroModal() {
         "@heliora_registros",
         JSON.stringify(listaRegistros),
       );
+
+      await agendarNotificacaoMedica(titulo, dataRegistro, tipoSelecionado);
 
       Alert.alert("Sucesso!", "Registro salvo com segurança no seu celular!");
       router.back(); // Volta para a tela anterior

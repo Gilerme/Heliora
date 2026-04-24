@@ -1,4 +1,4 @@
-import { FontAwesome } from "@expo/vector-icons";
+import { FontAwesome5 } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect, useRouter } from "expo-router"; // Importante para recarregar a tela
 import React, { useCallback, useState } from "react";
@@ -58,7 +58,7 @@ export default function HistoricoScreen() {
       case "Exame":
         return { bg: "#E9D8FD", color: "#805AD5", icon: "heartbeat" };
       case "Vacina":
-        return { bg: "#F0FFF4", color: "#38A169", icon: "shield" };
+        return { bg: "#F0FFF4", color: "#38A169", icon: "syringe" };
       default:
         return { bg: "#EDF2F7", color: "#718096", icon: "file-text" };
     }
@@ -80,7 +80,7 @@ export default function HistoricoScreen() {
       >
         {/* Ícone Redondo */}
         <View style={[styles.iconeContainer, { backgroundColor: estilo.bg }]}>
-          <FontAwesome name={estilo.icon} size={24} color={estilo.color} />
+          <FontAwesome5 name={estilo.icon} size={24} color={estilo.color} />
         </View>
 
         {/* Textos */}
@@ -98,7 +98,7 @@ export default function HistoricoScreen() {
 
         {/* Mostra um clipe de papel se tiver anexo (foto ou pdf) */}
         {item.anexo && (
-          <FontAwesome
+          <FontAwesome5
             name="paperclip"
             size={16}
             color="#CBD5E0"
@@ -138,7 +138,7 @@ export default function HistoricoScreen() {
 
       {/* 🚨 NOVA BARRA DE BUSCA (Estilizada inline para facilitar) */}
       <View style={styles.barraPesquisa}>
-        <FontAwesome name="search" size={20} color="#A0AEC0" />
+        <FontAwesome5 name="search" size={20} color="#A0AEC0" />
         <TextInput
           style={{ flex: 1, marginLeft: 10, fontSize: 16, color: "#2D3748" }}
           placeholder="Buscar consulta, local ou tipo..."
@@ -152,7 +152,7 @@ export default function HistoricoScreen() {
             onPress={() => setSearchText("")}
             style={{ padding: 5 }}
           >
-            <FontAwesome name="times-circle" size={20} color="#A0AEC0" />
+            <FontAwesome5 name="times-circle" size={20} color="#A0AEC0" />
           </TouchableOpacity>
         )}
       </View>
