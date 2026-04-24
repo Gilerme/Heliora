@@ -50,8 +50,8 @@ export default function CadastroScreen() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          id_paciente: pacienteData.id_paciente,
           username: email,
+          email: email,
           senha: senha,
         }),
       });
