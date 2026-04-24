@@ -10,11 +10,6 @@ class PacienteCreate(BaseModel):
     nome: str
     email:str
 
-class RegisterRequest(BaseModel):
-    id_paciente: int
-    username: str
-    senha: str
-
 
 app = FastAPI()
 
@@ -38,14 +33,6 @@ def criar_paciente(dados: PacienteCreate, db: Session = Depends(get_db)):
     db.refresh(paciente)
     return paciente
 
-@app.post("/register/")
-def register(data: RegisterRequest):
-    # Aqui você salva no banco
-    # (exemplo simples)
-
-    return {
-        "msg": "Conta criada com sucesso"
-    }
 
 # =========================
 # LISTAR PACIENTES

@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Date, Text, Boolean, ForeignKey, TIMESTAMP
+from sqlalchemy.orm import relationship
 from database import Base
 
 class Paciente(Base):
@@ -12,14 +13,17 @@ class Paciente(Base):
     endereco = Column(Text)
     telefone = Column(String)
 
-class Login(Base):
-    __tablename__ = "login"
+class Usuario(Base):
+    __tablename__ = "usuario"
 
-    id_login = Column(Integer, primary_key = True, index= True)
-    id_paciente = Column(Integer, ForeignKey("paciente.id_paciente"), unique=True)
-    username = Column(String(100), unique=True, nullable=False)
-    senha_hash = Column(String, nullable=False)
-    ativo = Column(Boolean, default=True)
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, unique=True, index = True)
+    username = Column(String, unique=True, index=True)
+    hashed_password = Column(String)
+    disabled = Column(Boolean, default=False)
+    id_paciente = Column(Integer, ForeignKey("paciente.id_paciente"))
+
+    paciente = relationship("Paciente")
 
 class Prontuario(Base):
     __tablename__ = "prontuario"
