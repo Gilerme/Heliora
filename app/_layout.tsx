@@ -1,14 +1,14 @@
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import {
   DarkTheme,
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
+import * as Notifications from "expo-notifications";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { Platform } from "react-native";
 import "react-native-reanimated";
-
-import { useColorScheme } from "@/hooks/use-color-scheme";
-import * as Notifications from "expo-notifications";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -18,6 +18,15 @@ Notifications.setNotificationHandler({
     shouldSetBadge: false,
   }),
 });
+
+if (Platform.OS === "android") {
+  Notifications.setNotificationChannelAsync("default", {
+    name: "Padrão",
+    importance: Notifications.AndroidImportance.MAX,
+    vibrationPattern: [0, 250, 250, 250],
+    lightColor: "#4A729A",
+  });
+}
 
 export const unstable_settings = {
   anchor: "(tabs)",
@@ -54,7 +63,7 @@ export default function RootLayout() {
           options={{ presentation: "modal", headerShown: false }}
         />
       </Stack>
-      <StatusBar style="auto" />
+      <StatusBar style="dark" />
     </ThemeProvider>
   );
 }

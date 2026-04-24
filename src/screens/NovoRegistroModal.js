@@ -127,28 +127,23 @@ export default function NovoRegistroModal() {
   const agendarNotificacaoMedica = async (titulo, dataTexto, tipo) => {
     try {
       const partes = dataTexto.split("/");
-      if (partes.length !== 3) return; // Segurança: Se a data estiver incompleta, não faz nada
+      if (partes.length !== 3) return;
 
-      const [dia, mes, ano] = partes;
-      const dataAlvo = new Date(ano, mes - 1, dia);
+      // 1. Convertendo para números inteiros (Isso previne o disparo imediato)
+      const dia = parseInt(partes[0], 10);
+      const mes = parseInt(partes[1], 10);
+      const ano = parseInt(partes[2], 10);
 
-      // Define a notificação para tocar às 08:00 da manhã daquele dia
-      dataAlvo.setHours(8, 0, 0, 0);
+      // 2. Criando a data corretamente
+      const dataAlvo = new Date(ano, mes - 1, dia, 8, 0, 0);
 
-      // Validação extra: Verifica se a data gerada é válida no JavaScript
-      if (isNaN(dataAlvo.getTime())) {
-        console.log("Data inválida detectada");
+      // 3. Validação de data futura
+      if (isNaN(dataAlvo.getTime()) || dataAlvo <= new Date()) {
+        console.log("Data inválida ou no passado. Ignorando agendamento.");
         return;
       }
 
-      // Se a data/hora alvo for menor que o momento atual, não agenda nada
-      if (dataAlvo < new Date()) {
-        console.log(
-          "Data no passado ou exame de hoje após as 8h. Notificação não agendada.",
-        );
-        return;
-      }
-
+      // 4. Agendamento com o objeto de trigger correto
       await Notifications.scheduleNotificationAsync({
         content: {
           title: `Lembrete Heliora 🩺`,
@@ -159,12 +154,15 @@ export default function NovoRegistroModal() {
           },
         },
         trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.DATE,
           date: dataAlvo,
           channelId: "default",
         },
       });
 
-      console.log(`Sucesso! Notificação agendada para: ${dataAlvo}`);
+      console.log(
+        `Sucesso! Agendado para ${dataAlvo.toLocaleDateString()} às 08:00`,
+      );
     } catch (error) {
       console.error("Erro ao agendar notificação:", error);
     }
