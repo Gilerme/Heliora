@@ -1,5 +1,6 @@
 import { FontAwesome5 } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect, useRouter } from "expo-router"; // Importante para recarregar a tela
 import React, { useCallback, useState } from "react";
 import {
@@ -128,49 +129,56 @@ export default function HistoricoScreen() {
   });
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.tituloTela}>Meu Histórico</Text>
-        <Text style={styles.descricao}>
-          Acompanhe todas as suas consultas, exames e vacinas.
-        </Text>
-      </View>
-
-      {/* 🚨 NOVA BARRA DE BUSCA (Estilizada inline para facilitar) */}
-      <View style={styles.barraPesquisa}>
-        <FontAwesome5 name="search" size={20} color="#A0AEC0" />
-        <TextInput
-          style={{ flex: 1, marginLeft: 10, fontSize: 16, color: "#2D3748" }}
-          placeholder="Buscar consulta, local ou tipo..."
-          placeholderTextColor="#A0AEC0"
-          value={searchText}
-          onChangeText={setSearchText}
-        />
-        {/* Botão de "X" que só aparece se tiver algo digitado */}
-        {searchText.length > 0 && (
-          <TouchableOpacity
-            onPress={() => setSearchText("")}
-            style={{ padding: 5 }}
-          >
-            <FontAwesome5 name="times-circle" size={20} color="#A0AEC0" />
-          </TouchableOpacity>
-        )}
-      </View>
-
-      <FlatList
-        data={registrosFiltrados} // 🚨 MUDE AQUI: De 'registros' para 'registrosFiltrados'
-        keyExtractor={(item) => item.id}
-        renderItem={renderizarItem}
-        contentContainerStyle={styles.listaContainer}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <Text style={styles.mensagemVazia}>
-            {searchText !== ""
-              ? "Nenhum resultado encontrado para a sua busca."
-              : "Você ainda não tem nenhum registro salvo. Adicione no botão '+' na tela inicial!"}
+    <LinearGradient
+      colors={["#E8EDEB", "#CDE0F5", "#E8EDEB"]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.container}
+    >
+      <SafeAreaView style={{ flex: 1 }}>
+        <View style={styles.header}>
+          <Text style={styles.tituloTela}>Meu Histórico</Text>
+          <Text style={styles.descricao}>
+            Acompanhe todas as suas consultas, exames e vacinas.
           </Text>
-        }
-      />
-    </SafeAreaView>
+        </View>
+
+        {/* 🚨 NOVA BARRA DE BUSCA (Estilizada inline para facilitar) */}
+        <View style={styles.barraPesquisa}>
+          <FontAwesome5 name="search" size={20} color="#A0AEC0" />
+          <TextInput
+            style={{ flex: 1, marginLeft: 10, fontSize: 16, color: "#2D3748" }}
+            placeholder="Buscar consulta, local ou tipo..."
+            placeholderTextColor="#A0AEC0"
+            value={searchText}
+            onChangeText={setSearchText}
+          />
+          {/* Botão de "X" que só aparece se tiver algo digitado */}
+          {searchText.length > 0 && (
+            <TouchableOpacity
+              onPress={() => setSearchText("")}
+              style={{ padding: 5 }}
+            >
+              <FontAwesome5 name="times-circle" size={20} color="#A0AEC0" />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        <FlatList
+          data={registrosFiltrados} // 🚨 MUDE AQUI: De 'registros' para 'registrosFiltrados'
+          keyExtractor={(item) => item.id}
+          renderItem={renderizarItem}
+          contentContainerStyle={styles.listaContainer}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <Text style={styles.mensagemVazia}>
+              {searchText !== ""
+                ? "Nenhum resultado encontrado para a sua busca."
+                : "Você ainda não tem nenhum registro salvo. Adicione no botão '+' na tela inicial!"}
+            </Text>
+          }
+        />
+      </SafeAreaView>
+    </LinearGradient>
   );
 }

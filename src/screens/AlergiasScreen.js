@@ -1,6 +1,7 @@
 import { FontAwesome } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   SafeAreaView,
   ScrollView,
@@ -13,18 +14,38 @@ import { styles } from "../styles/AlergiasStyles";
 
 export default function AlergiasScreen() {
   const router = useRouter();
-
-  // Estado para o texto que o usuário está digitando
   const [novaAlergia, setNovaAlergia] = useState("");
+  // 1. Iniciamos a lista vazia
+  const [listaAlergias, setListaAlergias] = useState([]);
 
-  // Lista de alergias (pode começar com alguns exemplos ou vazia)
-  const [listaAlergias, setListaAlergias] = useState([
-    { id: "1", nome: "Penicilina" },
-    { id: "2", nome: "Amendoim" },
-    { id: "3", nome: "Frutos do Mar" },
-  ]);
+  // 2. Carrega as alergias salvas assim que a tela abre
+  useEffect(() => {
+    carregarAlergias();
+  }, []);
 
-  // Função para adicionar a nova alergia à lista
+  const carregarAlergias = async () => {
+    try {
+      const dadosSalvos = await AsyncStorage.getItem("@heliora_alergias");
+      if (dadosSalvos) {
+        setListaAlergias(JSON.parse(dadosSalvos));
+      }
+    } catch (error) {
+      console.error("Erro ao carregar alergias:", error);
+    }
+  };
+
+  // 3. Função auxiliar para salvar no celular
+  const salvarAlergiasLocal = async (novaLista) => {
+    try {
+      await AsyncStorage.setItem(
+        "@heliora_alergias",
+        JSON.stringify(novaLista),
+      );
+    } catch (error) {
+      console.error("Erro ao salvar alergias:", error);
+    }
+  };
+
   const adicionarAlergia = () => {
     if (novaAlergia.trim() === "") return;
 
@@ -33,23 +54,23 @@ export default function AlergiasScreen() {
       nome: novaAlergia.trim(),
     };
 
-    setListaAlergias([...listaAlergias, novoObjeto]);
-    setNovaAlergia(""); // Limpa o campo após adicionar
+    const novaLista = [...listaAlergias, novoObjeto];
+    setListaAlergias(novaLista);
+    salvarAlergiasLocal(novaLista); // 🚨 Salva a atualização
+    setNovaAlergia("");
   };
 
-  // Função para remover uma alergia da lista
   const removerAlergia = (idParaRemover) => {
     const listaFiltrada = listaAlergias.filter(
       (item) => item.id !== idParaRemover,
     );
     setListaAlergias(listaFiltrada);
+    salvarAlergiasLocal(listaFiltrada); // 🚨 Salva a atualização
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* CABEÇALHO */}
       <View style={styles.header}>
-        {/* Usamos a cor vermelha padrão do estilo para o título */}
         <Text style={styles.tituloTela}>Alergias</Text>
         <TouchableOpacity onPress={() => router.back()}>
           <FontAwesome name="times" size={24} color="#999" />
@@ -62,7 +83,6 @@ export default function AlergiasScreen() {
           reações alérgicas para acesso rápido em emergências.
         </Text>
 
-        {/* ÁREA DE INPUT PARA NOVAS ALERGIAS */}
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
@@ -70,7 +90,7 @@ export default function AlergiasScreen() {
             placeholderTextColor="#A0AEC0"
             value={novaAlergia}
             onChangeText={setNovaAlergia}
-            onSubmitEditing={adicionarAlergia} // Adiciona ao apertar "Enter"
+            onSubmitEditing={adicionarAlergia}
           />
           <TouchableOpacity
             style={styles.botaoAdicionar}
@@ -80,7 +100,6 @@ export default function AlergiasScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* LISTAGEM DE TAGS (VERMELHO) */}
         <View style={styles.tagsContainer}>
           {listaAlergias.length === 0 ? (
             <Text style={{ color: "#999", fontStyle: "italic", marginTop: 10 }}>
@@ -100,7 +119,6 @@ export default function AlergiasScreen() {
             ))
           )}
         </View>
-
         <View style={{ height: 40 }} />
       </ScrollView>
     </SafeAreaView>
