@@ -3,7 +3,7 @@ import { Platform, StatusBar, StyleSheet } from "react-native";
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F0F4F8",
+    backgroundColor: "transparent",
   },
   header: {
     flexDirection: "row",

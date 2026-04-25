@@ -15,63 +15,31 @@ import { styles } from "../styles/CadastroStyles";
 export default function CadastroScreen() {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
+  const [tipoSanguineo, setTipoSanguineo] = useState("");
+  const [cpf, setCpf] = useState("");
   const [senha, setSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
-
   const router = useRouter();
 
-  
-  // 🔌 FUNÇÃO DE CADASTRO
-  const cadastrar = async () => {
+  const formatarCpf = (texto) => {
+    let t = texto.replace(/\D/g, "").substring(0, 11);
+    if (t.length > 3) t = t.substring(0, 3) + "." + t.substring(3);
+    if (t.length > 7) t = t.substring(0, 7) + "." + t.substring(7);
+    if (t.length > 11) t = t.substring(0, 11) + "-" + t.substring(11);
+    setCpf(t);
+  };
+
+  const cadastrar = () => {
+    if (!nome || !email || !cpf || !senha) {
+      alert("Preencha todos os campos obrigatórios");
+      return;
+    }
     if (senha !== confirmarSenha) {
       alert("As senhas não coincidem");
       return;
     }
-
-    try {
-      // 1️⃣ Criar paciente
-      const pacienteResponse = await fetch("http://192.168.0.163:8000/pacientes/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          nome: nome,
-          email: email,
-        }),
-      });
-
-      const pacienteData = await pacienteResponse.json();
-
-      // 2️⃣ Criar login (ROTA CORRIGIDA 🔥)
-      const loginResponse = await fetch("http://192.168.0.163:8000/register/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          id_paciente: pacienteData.id_paciente,
-          username: email,
-          senha: senha,
-        }),
-      });
-
-      const loginData = await loginResponse.json();
-
-      console.log(loginData);
-
-      // ✅ FORMA CORRETA
-      if (loginResponse.ok) {
-        alert("Conta criada com sucesso!");
-        router.replace("/");
-      } else {
-        alert(loginData.erro || "Erro ao criar conta");
-      }
-
-    } catch (error) {
-      console.log(error);
-      alert("Erro ao conectar com o servidor");
-    }
+    alert("Conta criada com sucesso!");
+    router.replace("/(tabs)");
   };
 
   return (
@@ -87,7 +55,7 @@ export default function CadastroScreen() {
           <View style={styles.header}>
             <Text style={styles.titulo}>Criar Conta</Text>
             <Text style={styles.subtitulo}>
-              Junte-se ao Heliora e tenha sua saúde em suas mãos.
+              Complete seus dados para começar.
             </Text>
           </View>
 
@@ -104,13 +72,41 @@ export default function CadastroScreen() {
             <Text style={styles.label}>E-mail</Text>
             <TextInput
               style={styles.input}
-              placeholder="Digite seu e-mail"
+              placeholder="seu@email.com"
               placeholderTextColor="#999"
               keyboardType="email-address"
               autoCapitalize="none"
               value={email}
               onChangeText={setEmail}
             />
+
+            <View
+              style={{ flexDirection: "row", justifyContent: "space-between" }}
+            >
+              <View style={{ width: "30%" }}>
+                <Text style={styles.label}>Tipo Sang.</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="O+"
+                  placeholderTextColor="#999"
+                  autoCapitalize="characters"
+                  maxLength={3}
+                  value={tipoSanguineo}
+                  onChangeText={setTipoSanguineo}
+                />
+              </View>
+              <View style={{ width: "65%" }}>
+                <Text style={styles.label}>CPF</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="000.000.000-00"
+                  placeholderTextColor="#999"
+                  keyboardType="numeric"
+                  value={cpf}
+                  onChangeText={formatarCpf}
+                />
+              </View>
+            </View>
 
             <Text style={styles.label}>Senha</Text>
             <TextInput
@@ -125,18 +121,14 @@ export default function CadastroScreen() {
             <Text style={styles.label}>Confirmar Senha</Text>
             <TextInput
               style={styles.input}
-              placeholder="Repita sua senha"
+              placeholder="Repita a senha"
               placeholderTextColor="#999"
               secureTextEntry
               value={confirmarSenha}
               onChangeText={setConfirmarSenha}
             />
 
-            {/* 🔥 BOTÃO CONECTADO AO BACKEND */}
-            <TouchableOpacity
-              style={styles.botaoPrincipal}
-              onPress={cadastrar}
-            >
+            <TouchableOpacity style={styles.botaoPrincipal} onPress={cadastrar}>
               <Text style={styles.textoBotaoPrincipal}>Cadastrar</Text>
             </TouchableOpacity>
           </View>

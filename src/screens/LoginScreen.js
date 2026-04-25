@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -8,15 +9,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
-import { useRouter } from "expo-router";
 import { styles } from "../styles/LoginStyles";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
-
   const router = useRouter();
+
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
