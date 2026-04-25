@@ -1,12 +1,14 @@
 import { FontAwesome } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import * as Sharing from "expo-sharing";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
 import {
   Alert,
   DeviceEventEmitter,
   Image,
+  Linking,
   SafeAreaView,
   ScrollView,
   Text,
@@ -18,18 +20,39 @@ import { styles } from "../styles/DetalhesRegistroStyles";
 export default function DetalhesRegistroScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
-
   const registro = params.dados ? JSON.parse(params.dados) : null;
+
+  const visualizarArquivo = async (uri) => {
+    if (!uri) return;
+    try {
+      if (uri.startsWith("http://") || uri.startsWith("https://")) {
+        await Linking.openURL(uri); // Se no futuro vier do backend
+      } else {
+        const disponivel = await Sharing.isAvailableAsync();
+        if (disponivel) {
+          await Sharing.shareAsync(uri, { dialogTitle: "Visualizar Arquivo" });
+        } else {
+          Alert.alert(
+            "Erro",
+            "Compartilhamento não disponível neste dispositivo.",
+          );
+        }
+      }
+    } catch (error) {
+      console.error("Erro ao abrir arquivo:", error);
+      Alert.alert("Erro", "Não foi possível abrir o anexo.");
+    }
+  };
 
   const confirmarExclusao = () => {
     Alert.alert(
       "Excluir Registro",
-      "Tem certeza que deseja apagar este documento? Essa ação não pode ser desfeita.",
+      "Tem certeza que deseja apagar este documento?",
       [
         { text: "Cancelar", style: "cancel" },
         {
           text: "Sim, Excluir",
-          style: "destructive", // Deixa o botão vermelho no iOS
+          style: "destructive",
           onPress: excluirRegistro,
         },
       ],
@@ -40,10 +63,7 @@ export default function DetalhesRegistroScreen() {
     try {
       const registrosSalvos = await AsyncStorage.getItem("@heliora_registros");
       let lista = registrosSalvos ? JSON.parse(registrosSalvos) : [];
-
-      // Filtra os itens. Vai manter na lista apenas quem tiver a DATA diferente do item atual.
       const novaLista = lista.filter((item) => item.data !== registro.data);
-
       await AsyncStorage.setItem(
         "@heliora_registros",
         JSON.stringify(novaLista),
@@ -53,25 +73,22 @@ export default function DetalhesRegistroScreen() {
         {
           text: "OK",
           onPress: () => {
-            // "Grita" no rádio comunicador que a lista mudou
             DeviceEventEmitter.emit("atualizarHistorico");
             router.back();
           },
         },
       ]);
-    } catch (error) {
-      console.error("Erro ao excluir:", error);
+    } catch (_error) {
       Alert.alert("Erro", "Não foi possível excluir o registro.");
     }
   };
 
-  if (!registro) {
+  if (!registro)
     return (
       <SafeAreaView style={styles.container}>
         <Text style={{ padding: 20 }}>Erro ao carregar dados.</Text>
       </SafeAreaView>
     );
-  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -99,7 +116,6 @@ export default function DetalhesRegistroScreen() {
         >
           <FontAwesome name="pencil" size={24} color="#4A729A" />
         </TouchableOpacity>
-
         <TouchableOpacity onPress={confirmarExclusao} style={{ padding: 10 }}>
           <FontAwesome name="trash-o" size={24} color="#E53E3E" />
         </TouchableOpacity>
@@ -142,19 +158,32 @@ export default function DetalhesRegistroScreen() {
 
         {registro.anexo ? (
           <View>
-            <Text style={styles.anexoTitulo}>Documento Anexo</Text>
+            <Text style={styles.anexoTitulo}>
+              Documento Anexo (Toque para abrir)
+            </Text>
             {registro.anexo.tipo === "imagem" ? (
-              <Image
-                source={{ uri: registro.anexo.uri }}
-                style={styles.imagemFull}
-              />
+              <TouchableOpacity
+                onPress={() => visualizarArquivo(registro.anexo.uri)}
+                activeOpacity={0.8}
+              >
+                <Image
+                  source={{ uri: registro.anexo.uri }}
+                  style={styles.imagemFull}
+                />
+              </TouchableOpacity>
             ) : (
-              <View style={styles.pdfCardFull}>
+              <TouchableOpacity
+                style={styles.pdfCardFull}
+                onPress={() => visualizarArquivo(registro.anexo.uri)}
+                activeOpacity={0.7}
+              >
                 <FontAwesome name="file-pdf-o" size={32} color="#E53E3E" />
                 <Text style={styles.pdfNome}>
-                  {registro.anexo.nome ? registro.anexo.nome : "Documento PDF"}
+                  {registro.anexo.nome
+                    ? registro.anexo.nome
+                    : "Visualizar Documento PDF"}
                 </Text>
-              </View>
+              </TouchableOpacity>
             )}
           </View>
         ) : null}

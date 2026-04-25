@@ -3,7 +3,7 @@ import { Platform, StatusBar, StyleSheet } from "react-native";
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F0F4F8",
+    backgroundColor: "transparent",
     paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
   },
   content: {
@@ -192,7 +192,7 @@ export const styles = StyleSheet.create({
   // Estilos do Modal
   modalOverlay: {
     flex: 1,
-    backgroundColor: "#F0F4F8", // Mesmo fundo cinza claro do app
+    backgroundColor: "#F0F4F8", // Fundo levemente opaco
   },
   modalContent: {
     flex: 1,

@@ -60,7 +60,6 @@ export default function PerfilScreen() {
         aspect: [1, 1], // Força proporção 1:1
         quality: 0.5, // Reduz qualidade para não ocupar muito espaço no storage
       });
-
       if (!resultado.canceled) {
         setFotoPerfil(resultado.assets[0].uri);
       }
@@ -72,8 +71,7 @@ export default function PerfilScreen() {
 
   // Máscara de Data (reutilizada)
   const formatarData = (texto) => {
-    let textoLimpo = texto.replace(/\D/g, "");
-    textoLimpo = textoLimpo.substring(0, 8);
+    let textoLimpo = texto.replace(/\D/g, "").substring(0, 8);
     if (textoLimpo.length > 2)
       textoLimpo = textoLimpo.substring(0, 2) + "/" + textoLimpo.substring(2);
     if (textoLimpo.length > 5)
@@ -83,8 +81,7 @@ export default function PerfilScreen() {
 
   // Máscara de CPF (###.###.###-##)
   const formatarCpf = (texto) => {
-    let textoLimpo = texto.replace(/\D/g, "");
-    textoLimpo = textoLimpo.substring(0, 11);
+    let textoLimpo = texto.replace(/\D/g, "").substring(0, 11);
     if (textoLimpo.length > 3)
       textoLimpo = textoLimpo.substring(0, 3) + "." + textoLimpo.substring(3);
     if (textoLimpo.length > 7)
@@ -93,12 +90,12 @@ export default function PerfilScreen() {
       textoLimpo = textoLimpo.substring(0, 11) + "-" + textoLimpo.substring(11);
     setCpf(textoLimpo);
   };
+
   const formatarAltura = (texto) => {
     let textoLimpo = texto.replace(/\D/g, ""); // Remove tudo que não é número
-    if (textoLimpo.length > 2) {
+    if (textoLimpo.length > 2)
       textoLimpo =
         textoLimpo.substring(0, 1) + "." + textoLimpo.substring(1, 3);
-    }
     setAltura(textoLimpo);
   };
 
@@ -108,21 +105,16 @@ export default function PerfilScreen() {
       {
         text: "Sair",
         style: "destructive", // Deixa o texto vermelho no iOS
-        onPress: () => {
-          // No futuro, se houver um token de autenticação, você limpa ele aqui
-          router.replace("/");
-        },
+        onPress: () => router.replace("/"), // No futuro, limpar token aqui
       },
     ]);
   };
 
   const salvarPerfil = async () => {
-    // Validação básica
     if (!nome || !email) {
       Alert.alert("Aviso", "Nome e E-mail são obrigatórios.");
       return;
     }
-
     try {
       const perfil = {
         fotoPerfil,
@@ -135,10 +127,7 @@ export default function PerfilScreen() {
         altura,
       };
       await AsyncStorage.setItem("@heliora_perfil", JSON.stringify(perfil));
-
-      // Avisa a Home que o nome/foto podem ter mudado
       DeviceEventEmitter.emit("atualizarPerfilHome");
-
       Alert.alert("Sucesso 🎉", "Seu perfil foi atualizado com segurança!");
       router.back();
     } catch (e) {
@@ -179,7 +168,6 @@ export default function PerfilScreen() {
 
         <View style={styles.form}>
           <Text style={styles.sectionSubtitle}>Informações Básicas</Text>
-
           <Text style={styles.label}>Nome Completo</Text>
           <TextInput
             style={styles.input}
@@ -230,6 +218,7 @@ export default function PerfilScreen() {
               />
             </View>
           </View>
+
           <View
             style={{
               flexDirection: "row",
@@ -242,7 +231,7 @@ export default function PerfilScreen() {
               <TextInput
                 style={styles.input}
                 value={peso}
-                onChangeText={(txt) => setPeso(txt.replace(/[^0-9.,]/g, ""))} // Aceita só números, ponto e vírgula
+                onChangeText={(txt) => setPeso(txt.replace(/[^0-9.,]/g, ""))}
                 placeholder="Ex: 70.5"
                 placeholderTextColor="#A0AEC0"
                 keyboardType="numeric"
@@ -262,6 +251,7 @@ export default function PerfilScreen() {
               />
             </View>
           </View>
+
           <View style={{ marginBottom: 20 }} />
           <Text style={styles.label}>CPF (para receitas e laudos)</Text>
           <TextInput
