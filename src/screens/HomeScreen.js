@@ -3,6 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
+
 import {
   DeviceEventEmitter,
   FlatList,
@@ -11,6 +12,7 @@ import {
   SafeAreaView,
   ScrollView,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -90,6 +92,8 @@ export default function HomeScreen() {
       console.error("Erro ao carregar perfil na Home", e);
     }
   };
+  const [modalHeliVisivel, setModalHeliVisivel] = useState(false);
+  const [perguntaHeli, setPerguntaHeli] = useState("");
 
   return (
     // 🔥 LINEAR GRADIENT ENVOLVENDO TUDO
@@ -258,7 +262,7 @@ export default function HomeScreen() {
                     }}
                   >
                     <FontAwesome5
-                      name="file-text-o" // Nota: No FontAwesome5 o nome exato costuma ser "file-alt" ou "file-contract", mas mantive o seu caso você use uma variação específica
+                      name="file-medical-alt"
                       size={20}
                       color="#4A729A"
                       style={{ marginRight: 15 }}
@@ -280,6 +284,70 @@ export default function HomeScreen() {
                   </Text>
                 }
               />
+            </View>
+          </View>
+        </Modal>
+        {/* BOTÃO FLUTUANTE DA HELI */}
+        <TouchableOpacity
+          style={styles.fabHeli}
+          onPress={() => setModalHeliVisivel(true)}
+        >
+          <FontAwesome5 name="robot" size={24} color="#FFFFFF" />
+        </TouchableOpacity>
+
+        {/* MODAL DA HELI */}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalHeliVisivel}
+          onRequestClose={() => setModalHeliVisivel(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContentHeli}>
+              {/* Cabeçalho da Heli */}
+              <View style={styles.modalHeaderHeli}>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <View style={styles.iconHeliContainer}>
+                    <FontAwesome5 name="robot" size={20} color="#FFFFFF" />
+                  </View>
+                  <View>
+                    <Text style={styles.modalTitleHeli}>Heli</Text>
+                    <Text style={styles.modalSubtitleHeli}>
+                      Sua assistente de saúde
+                    </Text>
+                  </View>
+                </View>
+                <TouchableOpacity onPress={() => setModalHeliVisivel(false)}>
+                  <FontAwesome5 name="times" size={28} color="#4A729A" />
+                </TouchableOpacity>
+              </View>
+
+              {/* Área de Chat Vazia (Por enquanto) */}
+              <ScrollView
+                style={styles.chatAreaHeli}
+                showsVerticalScrollIndicator={false}
+              >
+                <View style={styles.balaoHeli}>
+                  <Text style={styles.textoBalaoHeli}>
+                    Olá, {nomeUsuario}! Sou a Heli. Como posso te ajudar a
+                    entender melhor seus exames ou tirar dúvidas de saúde hoje?
+                  </Text>
+                </View>
+              </ScrollView>
+
+              {/* Input de Digitação */}
+              <View style={styles.inputContainerHeli}>
+                <TextInput
+                  style={styles.inputHeli}
+                  placeholder="Pergunte algo para a Heli..."
+                  placeholderTextColor="#A0AEC0"
+                  value={perguntaHeli}
+                  onChangeText={setPerguntaHeli}
+                />
+                <TouchableOpacity style={styles.btnEnviarHeli}>
+                  <FontAwesome5 name="paper-plane" size={18} color="#FFFFFF" />
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </Modal>

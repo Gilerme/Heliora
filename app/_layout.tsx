@@ -10,6 +10,12 @@ import { StatusBar } from "expo-status-bar";
 import { Platform } from "react-native";
 import "react-native-reanimated";
 
+import {
+  Merriweather_400Regular,
+  Merriweather_700Bold,
+  useFonts,
+} from "@expo-google-fonts/merriweather";
+
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowBanner: true,
@@ -34,6 +40,15 @@ export const unstable_settings = {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+
+  const [fontsLoaded] = useFonts({
+    Merriweather_Regular: Merriweather_400Regular,
+    Merriweather_Bold: Merriweather_700Bold,
+  });
+
+  if (!fontsLoaded) {
+    return null;
+  }
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
