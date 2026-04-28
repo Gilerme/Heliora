@@ -20,11 +20,12 @@ export const styles = StyleSheet.create({
   saudacao: {
     fontSize: 16,
     color: "#666666",
+    fontFamily: "Merriweather_Regular",
     marginBottom: 4,
   },
   nomeUsuario: {
     fontSize: 26,
-    fontWeight: "bold",
+    fontFamily: "Merriweather_Bold",
     color: "#4A729A",
   },
   perfilBotao: {
@@ -34,7 +35,6 @@ export const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     justifyContent: "center",
     alignItems: "center",
-
     elevation: 2,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -62,12 +62,13 @@ export const styles = StyleSheet.create({
   bannerTitle: {
     color: "#FFFFFF",
     fontSize: 20,
-    fontWeight: "bold",
+    fontFamily: "Merriweather_Bold",
     marginBottom: 8,
   },
   bannerSubtitle: {
     color: "#E2E8F0",
     fontSize: 14,
+    fontFamily: "Merriweather_Regular",
     lineHeight: 20,
     marginBottom: 16,
   },
@@ -80,7 +81,7 @@ export const styles = StyleSheet.create({
   },
   bannerButtonText: {
     color: "#4A729A",
-    fontWeight: "bold",
+    fontFamily: "Merriweather_Bold",
     fontSize: 14,
   },
   bannerImagePlaceholder: {
@@ -91,7 +92,7 @@ export const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontFamily: "Merriweather_Bold",
     color: "#333333",
     marginBottom: 16,
   },
@@ -123,7 +124,7 @@ export const styles = StyleSheet.create({
   },
   quickAccessText: {
     fontSize: 13,
-    fontWeight: "600",
+    fontFamily: "Merriweather_Bold",
     color: "#4A729A",
   },
   historyCard: {
@@ -145,25 +146,25 @@ export const styles = StyleSheet.create({
   },
   historyType: {
     fontSize: 14,
-    fontWeight: "bold",
+    fontFamily: "Merriweather_Bold",
     color: "#4A729A",
   },
   historyDate: {
     fontSize: 12,
     color: "#999999",
-    fontWeight: "500",
+    fontFamily: "Merriweather_Regular",
   },
   historyTitle: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontFamily: "Merriweather_Bold",
     color: "#333333",
     marginBottom: 4,
   },
   historySubtitle: {
     fontSize: 14,
     color: "#666666",
+    fontFamily: "Merriweather_Regular",
   },
-  // Estilos do Card de Último Registro
   cardUltimo: {
     backgroundColor: "#FFF",
     borderRadius: 15,
@@ -186,13 +187,22 @@ export const styles = StyleSheet.create({
     marginRight: 15,
   },
   cardTextContainer: { flex: 1 },
-  cardTitulo: { fontSize: 16, fontWeight: "bold", color: "#2D3748" },
-  cardSubtitulo: { fontSize: 14, color: "#718096", marginTop: 2 },
+  cardTitulo: {
+    fontSize: 16,
+    fontFamily: "Merriweather_Bold",
+    color: "#2D3748",
+  },
+  cardSubtitulo: {
+    fontSize: 14,
+    fontFamily: "Merriweather_Regular",
+    color: "#718096",
+    marginTop: 2,
+  },
 
-  // Estilos do Modal
+  // --- Estilos do Modal Exames ---
   modalOverlay: {
     flex: 1,
-    backgroundColor: "#F0F4F8", // Fundo levemente opaco
+    backgroundColor: "#F0F4F8",
   },
   modalContent: {
     flex: 1,
@@ -210,13 +220,13 @@ export const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 22,
-    fontWeight: "bold",
+    fontFamily: "Merriweather_Bold",
     color: "#4A729A",
   },
   itemExameModal: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFFFFF", // Card branco para os itens
+    backgroundColor: "#FFFFFF",
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
@@ -228,11 +238,12 @@ export const styles = StyleSheet.create({
   },
   tituloExameModal: {
     fontSize: 16,
-    fontWeight: "600",
+    fontFamily: "Merriweather_Bold",
     color: "#2D3748",
   },
   dataExameModal: {
     fontSize: 14,
+    fontFamily: "Merriweather_Regular",
     color: "#718096",
     marginTop: 2,
   },
@@ -240,6 +251,121 @@ export const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 40,
     color: "#A0AEC0",
+    fontFamily: "Merriweather_Regular",
     fontSize: 16,
+  },
+
+  // ==========================================
+  // --- ESTILOS DA IA HELI (BOTÃO E MODAL) ---
+  // ==========================================
+  fabHeli: {
+    position: "absolute",
+    bottom: 20,
+    right: 20,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: "#4A729A",
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+  },
+  modalContentHeli: {
+    flex: 1,
+    backgroundColor: "#F0F4F8",
+    marginTop: Platform.OS === "android" ? StatusBar.currentHeight + 60 : 80,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  modalHeaderHeli: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+    paddingBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E2E8F0",
+  },
+  iconHeliContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#4A729A",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  modalTitleHeli: {
+    fontSize: 20,
+    fontFamily: "Merriweather_Bold", // 👈 Fonte integrada
+    color: "#2D3748",
+  },
+  modalSubtitleHeli: {
+    fontSize: 12,
+    fontFamily: "Merriweather_Regular", // 👈 Fonte integrada
+    color: "#718096",
+  },
+  chatAreaHeli: {
+    flex: 1,
+    marginBottom: 15,
+  },
+  balaoHeli: {
+    backgroundColor: "#FFFFFF",
+    padding: 16,
+    borderRadius: 20,
+    borderTopLeftRadius: 4,
+    maxWidth: "85%",
+    marginBottom: 10,
+    elevation: 1,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+  },
+  textoBalaoHeli: {
+    fontSize: 14,
+    fontFamily: "Merriweather_Regular", // 👈 Fonte integrada
+    color: "#2D3748",
+    lineHeight: 22,
+  },
+  inputContainerHeli: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 25,
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  inputHeli: {
+    flex: 1,
+    height: 40,
+    fontFamily: "Merriweather_Regular", // 👈 Fonte integrada
+    color: "#2D3748",
+  },
+  btnEnviarHeli: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#4A729A",
+    justifyContent: "center",
+    alignItems: "center",
+    marginLeft: 10,
   },
 });
