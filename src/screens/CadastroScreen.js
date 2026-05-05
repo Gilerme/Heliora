@@ -29,18 +29,49 @@ export default function CadastroScreen() {
     setCpf(t);
   };
 
-  const cadastrar = () => {
-    if (!nome || !email || !cpf || !senha) {
-      alert("Preencha todos os campos obrigatórios");
+  const cadastrar = async () => {
+  if (!nome || !email || !cpf || !senha) {
+    alert("Preencha todos os campos obrigatórios");
+    return;
+  }
+
+  if (senha !== confirmarSenha) {
+    alert("As senhas não coincidem");
+    return;
+  }
+  const cpfLimpo = cpf.replace(/\D/g, "");
+
+  try {
+    const response = await fetch("http://192.168.0.163:8000/register/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: email,
+        nome: nome,
+        senha: senha,
+        cpf: cpfLimpo,
+      }),
+    });
+
+    const data = await response.json();
+    console.log("STATUS:", response.status);
+    console.log(JSON.stringify(data, null, 2));
+
+    if (!response.ok) {
+      alert(data.detail || "Erro ao cadastrar");
       return;
     }
-    if (senha !== confirmarSenha) {
-      alert("As senhas não coincidem");
-      return;
-    }
+
     alert("Conta criada com sucesso!");
     router.replace("/(tabs)");
-  };
+
+  } catch (error) {
+    console.log(error);
+    alert("Erro ao conectar com o servidor");
+  }
+};
 
   return (
     <SafeAreaView style={styles.container}>

@@ -7,6 +7,7 @@ from passlib.context import CryptContext
 import tables
 from database import SessionLocal, engine, Base
 from sqlalchemy.orm import Session
+from datetime import date
 
 Base.metadata.create_all(bind=engine)
 
@@ -26,6 +27,7 @@ class RegisterRequest(BaseModel):
     email: str
     nome: str
     senha: str
+    cpf: str
 
 class Token(BaseModel):
     access_token: str
@@ -51,11 +53,6 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 app = FastAPI()
-
-
-def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
-
 
 def verify_password(plain_password, hashed_password):
     senha_bytes = plain_password.encode("utf-8")[:72]
@@ -160,30 +157,28 @@ async def read_own_items(current_user: User = Depends(get_current_active_user)):
 @app.post("/register")
 def register(dados: RegisterRequest, db: Session = Depends(get_db)):
 
-    # valida tamanho da senha
     if len(dados.senha.encode("utf-8")) > 72:
         raise HTTPException(status_code=400, detail="Senha muito longa")
 
-    # verifica usuário
     user_existente = db.query(tables.Usuario).filter(
         tables.Usuario.email == dados.email
     ).first()
 
     if user_existente:
-        return {"erro": "Usuário já existe"}
+        raise HTTPException(status_code=400, detail="Usuário já existe")
 
-    # cria paciente
+    cpf_limpo = dados.cpf.replace(".", "").replace("-", "")
+
     paciente = tables.Paciente(
         nome=dados.nome,
-        email=dados.email
+        email=dados.email,
+        cpf=cpf_limpo,
     )
 
     db.add(paciente)
     db.commit()
     db.refresh(paciente)
-    print(dados.senha)
-    print(type(dados.senha))
-    # cria usuário
+
     usuario = tables.Usuario(
         email=dados.email,
         username=dados.email,
@@ -193,5 +188,6 @@ def register(dados: RegisterRequest, db: Session = Depends(get_db)):
 
     db.add(usuario)
     db.commit()
+    db.refresh(usuario)
 
     return {"msg": "Conta criada com sucesso"}

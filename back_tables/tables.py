@@ -7,7 +7,7 @@ class Paciente(Base):
 
     id_paciente = Column(Integer, primary_key=True, index=True)
     nome = Column(String(100))
-    data_nascimento = Column(Date)
+    data_nascimento = Column(String(100))
     email = Column(String, unique=True)
     cpf = Column(String, unique=True)
     endereco = Column(Text)
