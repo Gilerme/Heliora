@@ -78,9 +78,9 @@ export default function AlergiasScreen() {
         console.error("Paciente ID não encontrado no AsyncStorage");
         return;
       }
-      
+
       const response = await axios.post(`${API_URL}/pacientes/${idPaciente}/alergias?nome=${novaAlergia.trim()}`);
-      
+
       // Resposta da API retorna o ID gerado pelo banco
       const novoObjeto = {
         id: response.data.id || Date.now().toString(),
@@ -99,9 +99,9 @@ export default function AlergiasScreen() {
   const removerAlergia = (idParaRemover) => {
     const listaFiltrada = listaAlergias.filter(
       (item) => item.id !== idParaRemover,
-    );  
+    );
     setListaAlergias(listaFiltrada);
-    salvarAlergiasLocal(listaFiltrada); // 🚨 Salva a atualização
+    salvarAlergiasLocal(listaFiltrada);
   };
 
   return (

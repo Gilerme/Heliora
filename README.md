@@ -1,50 +1,69 @@
-# Welcome to your Expo app 👋
+# 🩺 Heliora
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+> **Seu histórico médico em suas mãos.** > O Heliora é um ecossistema digital de saúde focado na centralização e simplificação de registros médicos, auxiliando pacientes a terem uma visão clara e organizada de sua jornada de cuidado.
 
-## Get started
+---
 
-1. Install dependencies
+## 📝 Descrição do Projeto
 
-   ```bash
-   npm install
-   ```
+O Heliora nasceu da necessidade de resolver a fragmentação de informações de saúde. Muitas vezes perdemos um exame físico, esquecemos a data de uma vacina ou temos dificuldade de entender termos técnicos médicos.
 
-2. Start the app
+Este aplicativo permite que o usuário armazene consultas, exames, vacinas e receitas em um só lugar, com segurança e praticidade, unindo tecnologia e um design humanizado para transformar a forma como você lida com sua saúde.
 
-   ```bash
-   npx expo start
-   ```
+---
 
-In the output, you'll find options to open the app in a
+## 📸 Galeria (Screenshots)
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Confira o visual moderno e acolhedor do Heliora, desenvolvido com foco na clareza e facilidade de uso:
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+|          Home & IA Heli           |              Histórico Médico               |            Perfil & Dados             |
+| :-------------------------------: | :-----------------------------------------: | :-----------------------------------: |
+| ![Home](./assets/images/home.PNG) | ![Historico](./assets/images/historico.PNG) | ![Perfil](./assets/images/perfil.PNG) |
 
-## Get a fresh project
+---
 
-When you're ready, run:
+## 🎥 Vídeo Demonstrativo
+
+Assista ao vídeo abaixo para ver o fluxo de uso do aplicativo:
+
+[![Assista ao vídeo demo](https://img.shields.io/badge/YouTube-Assista%20Agora-red?style=for-the-badge&logo=youtube)](LINK_DO_VIDEO_AQUI)
+
+> _Caso o link acima não funcione, clique [aqui](LINK_DO_VIDEO_AQUI) para acessar o vídeo diretamente._
+
+---
+
+## ✨ Principais Funcionalidades
+
+- **Histórico Centralizado:** Armazenamento de registros por categorias (Consultas, Exames, Vacinas).
+- **Heli (AI Assistant):** Uma assistente inteligente integrada para simplificar termos médicos complexos e tirar dúvidas sobre saúde.
+- **Scribe AI:** Um auxílio para a gravação de consultas médicas afim de deixar salvo toda a conversa para visualização futura.
+- **Acesso Rápido:** Atalhos para visualização imediata de Alergias, Condições Crônicas e Exames Recentes.
+- **Anexos Inteligentes:** Suporte para visualização de arquivos e laudos médicos.
+- **Design Acolhedor:** Interface moderna com tipografia **Merriweather** e transições em degradê para uma experiência humanizada.
+
+---
+
+## 🚀 Como Executar o Projeto (Expo Go)
+
+Para rodar o Heliora no seu dispositivo e testar a interface:
+
+### 1. Pré-requisitos
+
+- Ter o **Node.js** instalado em seu computador.
+- Ter o aplicativo **Expo Go** instalado no seu celular ([Android](https://play.google.com/store/apps/details?id=host.exp.exponent) ou [iOS](https://apps.apple.com/app/expo-go/id982107779)).
+
+### 2. Instalação e Execução
 
 ```bash
-npm run reset-project
+# Clonar o repositório
+git clone [https://github.com/seu-usuario/heliora.git](https://github.com/seu-usuario/heliora.git)
+
+# Entrar na pasta do projeto
+cd heliora
+
+# Instalar as dependências necessárias
+npm install
+
+# Iniciar o servidor de desenvolvimento
+npx expo start
 ```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.

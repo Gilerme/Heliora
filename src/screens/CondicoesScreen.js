@@ -85,6 +85,7 @@ export default function CondicoesScreen() {
         nome: novaCondicao.trim(),
       };
 
+<<<<<<< HEAD
       const novaLista = [...listaCondicoes, novoObjeto];
       setListaCondicoes(novaLista);
       salvarCondicoesLocal(novaLista);
@@ -92,6 +93,11 @@ export default function CondicoesScreen() {
     } catch (error) {
       console.error("Erro ao salvar condição na API:", error);
     }
+=======
+    const novaLista = [...listaCondicoes, novoObjeto];
+    setListaCondicoes(novaLista);
+    salvarCondicoesLocal(novaLista);
+>>>>>>> 67b461d78994a96f5fa8ff7689ece17b3bdbb6aa
   };
 
   const removerCondicao = (idParaRemover) => {
@@ -99,7 +105,7 @@ export default function CondicoesScreen() {
       (item) => item.id !== idParaRemover,
     );
     setListaCondicoes(listaFiltrada);
-    salvarCondicoesLocal(listaFiltrada); // 🚨 Salva a atualização
+    salvarCondicoesLocal(listaFiltrada);
   };
 
   return (
