@@ -143,7 +143,7 @@ export default function HistoricoScreen() {
           </Text>
         </View>
 
-        {/* 🚨 NOVA BARRA DE BUSCA (Estilizada inline para facilitar) */}
+        {/* BARRA DE BUSCA (Estilizada inline para facilitar) */}
         <View style={styles.barraPesquisa}>
           <FontAwesome5 name="search" size={20} color="#A0AEC0" />
           <TextInput
@@ -165,7 +165,7 @@ export default function HistoricoScreen() {
         </View>
 
         <FlatList
-          data={registrosFiltrados} // 🚨 MUDE AQUI: De 'registros' para 'registrosFiltrados'
+          data={registrosFiltrados}
           keyExtractor={(item) => item.id}
           renderItem={renderizarItem}
           contentContainerStyle={styles.listaContainer}
