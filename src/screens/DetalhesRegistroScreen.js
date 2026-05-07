@@ -26,7 +26,7 @@ export default function DetalhesRegistroScreen() {
     if (!uri) return;
     try {
       if (uri.startsWith("http://") || uri.startsWith("https://")) {
-        await Linking.openURL(uri); // Se no futuro vier do backend
+        await Linking.openURL(uri);
       } else {
         const disponivel = await Sharing.isAvailableAsync();
         if (disponivel) {

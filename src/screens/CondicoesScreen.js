@@ -56,8 +56,7 @@ export default function CondicoesScreen() {
 
     const novaLista = [...listaCondicoes, novoObjeto];
     setListaCondicoes(novaLista);
-    salvarCondicoesLocal(novaLista); // 🚨 Salva a atualização
-    setNovaCondicao("");
+    salvarCondicoesLocal(novaLista);
   };
 
   const removerCondicao = (idParaRemover) => {
@@ -65,7 +64,7 @@ export default function CondicoesScreen() {
       (item) => item.id !== idParaRemover,
     );
     setListaCondicoes(listaFiltrada);
-    salvarCondicoesLocal(listaFiltrada); // 🚨 Salva a atualização
+    salvarCondicoesLocal(listaFiltrada);
   };
 
   return (

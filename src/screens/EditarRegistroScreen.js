@@ -331,7 +331,6 @@ export default function EditarRegistroScreen() {
           )}
         </View>
 
-        {/* Mudei o nome do botão para Atualizar */}
         <TouchableOpacity
           style={styles.botaoSalvar}
           onPress={atualizarRegistro}

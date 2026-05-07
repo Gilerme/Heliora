@@ -56,7 +56,7 @@ export default function AlergiasScreen() {
 
     const novaLista = [...listaAlergias, novoObjeto];
     setListaAlergias(novaLista);
-    salvarAlergiasLocal(novaLista); // 🚨 Salva a atualização
+    salvarAlergiasLocal(novaLista);
     setNovaAlergia("");
   };
 
@@ -65,7 +65,7 @@ export default function AlergiasScreen() {
       (item) => item.id !== idParaRemover,
     );
     setListaAlergias(listaFiltrada);
-    salvarAlergiasLocal(listaFiltrada); // 🚨 Salva a atualização
+    salvarAlergiasLocal(listaFiltrada);
   };
 
   return (
