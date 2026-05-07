@@ -1,6 +1,8 @@
+import axios from "axios";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
@@ -11,6 +13,25 @@ import {
   View,
 } from "react-native";
 import { styles } from "../styles/CadastroStyles";
+
+const API_URL = "http://192.168.0.163:8000";
+
+// Função para comunicar com o seu FastAPI
+const registerUser = async (nome, email, cpf, senha, tipoSanguineo) => {
+  try {
+    const response = await axios.post(`${API_URL}/register`, {
+      nome: nome,
+      email: email,
+      cpf: cpf,
+      senha: senha,
+      tipo_sanguineo: tipoSanguineo
+    });
+    return response.data;
+  } catch (error) {
+    console.error(error.response?.data || error.message);
+    throw error;
+  }
+};
 
 export default function CadastroScreen() {
   const [nome, setNome] = useState("");
@@ -29,49 +50,30 @@ export default function CadastroScreen() {
     setCpf(t);
   };
 
-  const cadastrar = async () => {
-  if (!nome || !email || !cpf || !senha) {
-    alert("Preencha todos os campos obrigatórios");
-    return;
-  }
-
-  if (senha !== confirmarSenha) {
-    alert("As senhas não coincidem");
-    return;
-  }
-  const cpfLimpo = cpf.replace(/\D/g, "");
-
-  try {
-    const response = await fetch("http://192.168.0.163:8000/register/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: email,
-        nome: nome,
-        senha: senha,
-        cpf: cpfLimpo,
-      }),
-    });
-
-    const data = await response.json();
-    console.log("STATUS:", response.status);
-    console.log(JSON.stringify(data, null, 2));
-
-    if (!response.ok) {
-      alert(data.detail || "Erro ao cadastrar");
+  const handleCadastrar = async () => {
+    // Validações básicas
+    if (!nome || !email || !cpf || !senha || !confirmarSenha) {
+      Alert.alert("Atenção", "Por favor, preencha todos os campos.");
       return;
     }
 
-    alert("Conta criada com sucesso!");
-    router.replace("/(tabs)");
+    if (senha !== confirmarSenha) {
+      Alert.alert("Erro", "As senhas não coincidem!");
+      return;
+    }
 
-  } catch (error) {
-    console.log(error);
-    alert("Erro ao conectar com o servidor");
-  }
-};
+    try {
+      // Envia os parâmetros que a rota /register do backend espera
+      await registerUser(nome, email, cpf, senha, tipoSanguineo);
+      
+      Alert.alert("Sucesso", "Conta criada com sucesso!");
+      router.replace("/"); // Redireciona para a tela de login
+    } catch (error) {
+      console.log(error.response.data);
+      const mensagem = error.response?.data?.detail || "Erro ao tentar cadastrar usuário.";
+      Alert.alert("Erro", mensagem);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -85,9 +87,7 @@ export default function CadastroScreen() {
         >
           <View style={styles.header}>
             <Text style={styles.titulo}>Criar Conta</Text>
-            <Text style={styles.subtitulo}>
-              Complete seus dados para começar.
-            </Text>
+            <Text style={styles.subtitulo}>Complete seus dados para começar.</Text>
           </View>
 
           <View style={styles.form}>
@@ -111,9 +111,7 @@ export default function CadastroScreen() {
               onChangeText={setEmail}
             />
 
-            <View
-              style={{ flexDirection: "row", justifyContent: "space-between" }}
-            >
+            <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
               <View style={{ width: "30%" }}>
                 <Text style={styles.label}>Tipo Sang.</Text>
                 <TextInput
@@ -159,7 +157,7 @@ export default function CadastroScreen() {
               onChangeText={setConfirmarSenha}
             />
 
-            <TouchableOpacity style={styles.botaoPrincipal} onPress={cadastrar}>
+            <TouchableOpacity style={styles.botaoPrincipal} onPress={handleCadastrar}>
               <Text style={styles.textoBotaoPrincipal}>Cadastrar</Text>
             </TouchableOpacity>
           </View>

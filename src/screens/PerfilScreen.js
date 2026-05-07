@@ -2,6 +2,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
+import axios from "axios";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
@@ -14,6 +15,8 @@ import {
   View,
 } from "react-native";
 import { styles } from "../styles/PerfilStyles";
+
+const API_URL = "http://192.168.0.163:8000";
 
 export default function PerfilScreen() {
   const router = useRouter();
@@ -126,6 +129,21 @@ export default function PerfilScreen() {
         peso,
         altura,
       };
+      
+      const idPaciente = await AsyncStorage.getItem("id_paciente");
+      if (idPaciente) {
+        await axios.put(`${API_URL}/pacientes/${idPaciente}`, {
+          nome: perfil.nome,
+          email: perfil.email,
+          data_nascimento: perfil.dataNascimento,
+          cpf: perfil.cpf,
+          tipo_sanguineo: perfil.tipoSanguineo,
+          peso: perfil.peso,
+          altura: perfil.altura,
+          foto_perfil: perfil.fotoPerfil
+        });
+      }
+
       await AsyncStorage.setItem("@heliora_perfil", JSON.stringify(perfil));
       DeviceEventEmitter.emit("atualizarPerfilHome");
       Alert.alert("Sucesso 🎉", "Seu perfil foi atualizado com segurança!");
