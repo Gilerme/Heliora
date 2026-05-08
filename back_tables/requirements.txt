@@ -1,0 +1,17 @@
+# heliora — Python dependencies
+# Install with: pip install -r requirements.txt
+
+# Web framework
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+python-multipart>=0.0.9      # Required for file uploads in FastAPI
+
+# Audio transcription (Whisper runs locally — no API key needed)
+openai-whisper>=20231117
+ffmpeg-python>=0.2.0         # Whisper needs ffmpeg for audio decoding
+
+# Medical chatbot (free tier via Google AI Studio)
+google-generativeai>=0.8.0
+
+# Utilities
+python-dotenv>=1.0.0         # Load .env variables
