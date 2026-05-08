@@ -1,5 +1,6 @@
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
+import axios from "axios";
 import {
     KeyboardAvoidingView,
     Platform,
@@ -8,12 +9,34 @@ import {
     TextInput,
     TouchableOpacity,
     View,
+    Alert,
 } from "react-native";
 import { styles } from "../styles/EsqueciSenhaStyles";
 
+const API_URL = "http://192.168.0.163:8000";
+
 export default function EsqueciSenhaScreen() {
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  const handleRecuperarSenha = async () => {
+    if (!email) {
+      Alert.alert("Atenção", "Por favor, digite seu e-mail.");
+      return;
+    }
+    setLoading(true);
+    try {
+      await axios.post(`${API_URL}/esqueci-senha`, { email });
+      Alert.alert("Sucesso", "Se o e-mail existir, um link de recuperação será enviado.");
+      router.back();
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Erro", "Não foi possível conectar ao servidor. Tente novamente.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -43,9 +66,10 @@ export default function EsqueciSenhaScreen() {
 
           <TouchableOpacity
             style={styles.botaoPrincipal}
-            onPress={() => alert("Link de recuperação enviado para: " + email)}
+            onPress={handleRecuperarSenha}
+            disabled={loading}
           >
-            <Text style={styles.textoBotaoPrincipal}>Enviar Link</Text>
+            <Text style={styles.textoBotaoPrincipal}>{loading ? "Enviando..." : "Enviar Link"}</Text>
           </TouchableOpacity>
         </View>
 

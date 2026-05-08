@@ -1,5 +1,6 @@
 import { FontAwesome } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -11,6 +12,8 @@ import {
   View,
 } from "react-native";
 import { styles } from "../styles/CondicoesStyles";
+
+const API_URL = "http://192.168.0.163:8000";
 
 export default function CondicoesScreen() {
   const router = useRouter();
@@ -25,12 +28,30 @@ export default function CondicoesScreen() {
 
   const carregarCondicoes = async () => {
     try {
-      const dadosSalvos = await AsyncStorage.getItem("@heliora_condicoes");
-      if (dadosSalvos) {
-        setListaCondicoes(JSON.parse(dadosSalvos));
+      const idPaciente = await AsyncStorage.getItem("id_paciente");
+      if (idPaciente) {
+        // Busca da API primeiro
+        try {
+          const response = await axios.get(`${API_URL}/pacientes/${idPaciente}/condicao`);
+          const condicoesAPI = response.data;
+          setListaCondicoes(condicoesAPI);
+          salvarCondicoesLocal(condicoesAPI); // Sincroniza no AsyncStorage
+        } catch (apiError) {
+          console.error("Erro ao carregar condições da API:", apiError);
+          // Fallback para os dados salvos localmente
+          const dadosSalvos = await AsyncStorage.getItem("@heliora_condicoes");
+          if (dadosSalvos) {
+            setListaCondicoes(JSON.parse(dadosSalvos));
+          }
+        }
+      } else {
+        const dadosSalvos = await AsyncStorage.getItem("@heliora_condicoes");
+        if (dadosSalvos) {
+          setListaCondicoes(JSON.parse(dadosSalvos));
+        }
       }
     } catch (error) {
-      console.error("Erro ao carregar condições:", error);
+      console.error("Erro geral ao carregar condições:", error);
     }
   };
 
@@ -46,17 +67,37 @@ export default function CondicoesScreen() {
     }
   };
 
-  const adicionarCondicao = () => {
+  const adicionarCondicao = async () => {
     if (novaCondicao.trim() === "") return;
 
-    const novoObjeto = {
-      id: Date.now().toString(),
-      nome: novaCondicao.trim(),
-    };
+    try {
+      const idPaciente = await AsyncStorage.getItem("id_paciente");
+      if (!idPaciente) {
+        console.error("Paciente ID não encontrado no AsyncStorage");
+        return;
+      }
+      
+      const response = await axios.post(`${API_URL}/pacientes/${idPaciente}/condicao?nome=${novaCondicao.trim()}`);
+      
+      // Resposta da API retorna o ID gerado pelo banco
+      const novoObjeto = {
+        id: response.data.id || Date.now().toString(),
+        nome: novaCondicao.trim(),
+      };
 
+<<<<<<< HEAD
+      const novaLista = [...listaCondicoes, novoObjeto];
+      setListaCondicoes(novaLista);
+      salvarCondicoesLocal(novaLista);
+      setNovaCondicao("");
+    } catch (error) {
+      console.error("Erro ao salvar condição na API:", error);
+    }
+=======
     const novaLista = [...listaCondicoes, novoObjeto];
     setListaCondicoes(novaLista);
     salvarCondicoesLocal(novaLista);
+>>>>>>> 67b461d78994a96f5fa8ff7689ece17b3bdbb6aa
   };
 
   const removerCondicao = (idParaRemover) => {

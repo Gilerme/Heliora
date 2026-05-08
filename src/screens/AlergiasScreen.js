@@ -1,5 +1,6 @@
 import { FontAwesome } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -11,6 +12,8 @@ import {
   View,
 } from "react-native";
 import { styles } from "../styles/AlergiasStyles";
+
+const API_URL = "http://192.168.0.163:8000";
 
 export default function AlergiasScreen() {
   const router = useRouter();
@@ -25,12 +28,32 @@ export default function AlergiasScreen() {
 
   const carregarAlergias = async () => {
     try {
-      const dadosSalvos = await AsyncStorage.getItem("@heliora_alergias");
-      if (dadosSalvos) {
-        setListaAlergias(JSON.parse(dadosSalvos));
+      const idPaciente = await AsyncStorage.getItem("id_paciente");
+      if (idPaciente) {
+        // Busca da API primeiro
+        try {
+          const response = await axios.get(`${API_URL}/pacientes/${idPaciente}/alergias`);
+          const alergiasAPI = response.data;
+          // Pode formatar as chaves se a API retornar diferente do que a tela espera
+          // A API retorna [{"id": 1, "nome": "Amendoim"}] que bate perfeitamente com a necessidade
+          setListaAlergias(alergiasAPI);
+          salvarAlergiasLocal(alergiasAPI); // Sincroniza no AsyncStorage
+        } catch (apiError) {
+          console.error("Erro ao carregar alergias da API:", apiError);
+          // Fallback para os dados salvos localmente
+          const dadosSalvos = await AsyncStorage.getItem("@heliora_alergias");
+          if (dadosSalvos) {
+            setListaAlergias(JSON.parse(dadosSalvos));
+          }
+        }
+      } else {
+        const dadosSalvos = await AsyncStorage.getItem("@heliora_alergias");
+        if (dadosSalvos) {
+          setListaAlergias(JSON.parse(dadosSalvos));
+        }
       }
     } catch (error) {
-      console.error("Erro ao carregar alergias:", error);
+      console.error("Erro geral ao carregar alergias:", error);
     }
   };
 
@@ -46,18 +69,31 @@ export default function AlergiasScreen() {
     }
   };
 
-  const adicionarAlergia = () => {
+  const adicionarAlergia = async () => {
     if (novaAlergia.trim() === "") return;
 
-    const novoObjeto = {
-      id: Date.now().toString(),
-      nome: novaAlergia.trim(),
-    };
+    try {
+      const idPaciente = await AsyncStorage.getItem("id_paciente");
+      if (!idPaciente) {
+        console.error("Paciente ID não encontrado no AsyncStorage");
+        return;
+      }
 
-    const novaLista = [...listaAlergias, novoObjeto];
-    setListaAlergias(novaLista);
-    salvarAlergiasLocal(novaLista);
-    setNovaAlergia("");
+      const response = await axios.post(`${API_URL}/pacientes/${idPaciente}/alergias?nome=${novaAlergia.trim()}`);
+
+      // Resposta da API retorna o ID gerado pelo banco
+      const novoObjeto = {
+        id: response.data.id || Date.now().toString(),
+        nome: novaAlergia.trim(),
+      };
+
+      const novaLista = [...listaAlergias, novoObjeto];
+      setListaAlergias(novaLista);
+      salvarAlergiasLocal(novaLista);
+      setNovaAlergia("");
+    } catch (error) {
+      console.error("Erro ao salvar alergia na API:", error);
+    }
   };
 
   const removerAlergia = (idParaRemover) => {

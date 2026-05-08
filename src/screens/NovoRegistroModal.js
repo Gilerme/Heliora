@@ -3,6 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
 import * as Notifications from "expo-notifications";
+import axios from "axios";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -16,6 +17,8 @@ import {
   View,
 } from "react-native";
 import { styles } from "../styles/NovoRegistroStyles";
+
+const API_URL = "http://192.168.0.163:8000";
 
 export default function NovoRegistroModal() {
   const router = useRouter();
@@ -66,16 +69,18 @@ export default function NovoRegistroModal() {
   const anexarArquivo = async () => {
     try {
       const resultado = await DocumentPicker.getDocumentAsync({
-        type: "application/pdf", // Filtra apenas para PDFs
+        type: ["application/pdf", "image/*"], // Filtra para PDFs e Imagens
         copyToCacheDirectory: true,
       });
 
       if (!resultado.canceled) {
-        // O Expo Document Picker retorna os dados dentro de assets[0]
+        const asset = resultado.assets[0];
+        const isImage = asset.mimeType && asset.mimeType.startsWith("image/");
+        
         setArquivoAnexo({
-          uri: resultado.assets[0].uri,
-          nome: resultado.assets[0].name,
-          tipo: "pdf",
+          uri: asset.uri,
+          nome: asset.name,
+          tipo: isImage ? "imagem" : "pdf",
         });
       }
     } catch (err) {
@@ -175,23 +180,86 @@ export default function NovoRegistroModal() {
       return;
     }
 
-    // 2. Montar o "pacote" de dados
-    const novoRegistro = {
-      id: Date.now().toString(), // Cria um ID único baseado na hora exata
-      tipo: tipoSelecionado,
-      titulo: titulo,
-      data: dataRegistro,
-      local: local,
-      notas: notas,
-      anexo: arquivoAnexo, // Salva o caminho da foto/PDF se houver
-    };
-
     try {
-      // 3. Puxar o que já existe no cofre
+      const idPaciente = await AsyncStorage.getItem("id_paciente");
+      if (!idPaciente) {
+        Alert.alert("Erro", "Paciente não identificado. Faça login novamente.");
+        return;
+      }
+
+      // Preparar FormData para envio
+      const formData = new FormData();
+      let endpoint = "";
+
+      if (tipoSelecionado === "Consulta") {
+        endpoint = `/pacientes/${idPaciente}/consultas`;
+        formData.append("nome", titulo);
+        
+        // Conversão de data de DD/MM/AAAA para YYYY-MM-DD
+        const partes = dataRegistro.split("/");
+        if (partes.length === 3) {
+          formData.append("data", `${partes[2]}-${partes[1]}-${partes[0]}`);
+        } else {
+          formData.append("data", dataRegistro);
+        }
+        
+        formData.append("profissional", local || "Não informado");
+        
+        // Se a gravação estivesse pronta, enviaríamos aqui:
+        // if (arquivoAnexo && arquivoAnexo.uri) {
+        //   formData.append("audio_file", {
+        //     uri: arquivoAnexo.uri,
+        //     name: arquivoAnexo.nome || "audio.m4a",
+        //     type: "audio/m4a"
+        //   });
+        // }
+      } else if (tipoSelecionado === "Exame") {
+        endpoint = `/pacientes/${idPaciente}/exames`;
+        endpoint += `?laboratorio=${encodeURIComponent(local || "Não informado")}&nome_exame=${encodeURIComponent(titulo)}`;
+        if (!arquivoAnexo) {
+          Alert.alert("Atenção", "Para Exames, é obrigatório anexar um arquivo PDF ou Imagem.");
+          return;
+        }
+        formData.append("file", {
+          uri: arquivoAnexo.uri,
+          name: arquivoAnexo.nome || `exame_${Date.now()}.${arquivoAnexo.tipo === "pdf" ? "pdf" : "jpg"}`,
+          type: arquivoAnexo.tipo === "pdf" ? "application/pdf" : "image/jpeg"
+        });
+      } else if (tipoSelecionado === "Vacina") {
+        endpoint = `/pacientes/${idPaciente}/vacinas`;
+        endpoint += `?local=${encodeURIComponent(local || "Não informado")}&nome_vacina=${encodeURIComponent(titulo)}`;
+        if (!arquivoAnexo) {
+          Alert.alert("Atenção", "Para Vacinas, é obrigatório anexar um arquivo PDF ou Imagem.");
+          return;
+        }
+        formData.append("file", {
+          uri: arquivoAnexo.uri,
+          name: arquivoAnexo.nome || `vacina_${Date.now()}.${arquivoAnexo.tipo === "pdf" ? "pdf" : "jpg"}`,
+          type: arquivoAnexo.tipo === "pdf" ? "application/pdf" : "image/jpeg"
+        });
+      }
+
+      // 2. Chamar a API
+      const response = await axios.post(`${API_URL}${endpoint}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data"
+        }
+      });
+
+      // 3. Montar o "pacote" de dados para uso no celular (AsyncStorage backup)
+      const novoRegistro = {
+        id: response.data.id_consulta || response.data.id_exame || response.data.id_vacinas || Date.now().toString(),
+        tipo: tipoSelecionado,
+        titulo: titulo,
+        data: dataRegistro,
+        local: local,
+        notas: notas,
+        anexo: arquivoAnexo,
+      };
+
+      // 4. Salvar localmente também
       const registrosSalvos = await AsyncStorage.getItem("@heliora_registros");
       let listaRegistros = registrosSalvos ? JSON.parse(registrosSalvos) : [];
-
-      // 4. Adicionar o novo e guardar de volta
       listaRegistros.push(novoRegistro);
       await AsyncStorage.setItem(
         "@heliora_registros",
@@ -200,11 +268,11 @@ export default function NovoRegistroModal() {
 
       await agendarNotificacaoMedica(titulo, dataRegistro, tipoSelecionado);
 
-      Alert.alert("Sucesso!", "Registro salvo com segurança no seu celular!");
-      router.back(); // Volta para a tela anterior
+      Alert.alert("Sucesso!", "Registro salvo com segurança!");
+      router.back();
     } catch (err) {
-      console.error("Erro ao salvar:", err);
-      Alert.alert("Erro", "Não foi possível salvar os dados.");
+      console.error("Erro ao salvar:", err.response?.data || err.message);
+      Alert.alert("Erro", "Não foi possível salvar os dados no servidor.");
     }
   };
 
