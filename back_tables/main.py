@@ -4,7 +4,7 @@ import os
 from groq import Groq
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from . import models, schemas, auth, database
+import models, schemas, auth, database
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime
 

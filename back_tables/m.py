@@ -8,6 +8,8 @@ Exposes two main feature endpoints:
 Run locally:
     uvicorn main:app --reload
 """
+from dotenv import load_dotenv
+load_dotenv()
 
 import os
 from contextlib import asynccontextmanager

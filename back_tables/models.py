@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Date, Text, Boolean, ForeignKey, TIMESTAMP, DateTime
 from sqlalchemy.orm import relationship
-from back_tables.database import Base
+from database import Base
 from datetime import datetime
 
 class Paciente(Base):
